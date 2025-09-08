@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Tuple, Dict, Optional
+from typing import List, Dict, Optional
 
 class GaussSeidelSolver:
     """
@@ -13,8 +13,6 @@ class GaussSeidelSolver:
     def __init__(self):
         # historial de todas las iteraciones del proceso
         self.iteration_history = []
-        # historial de convergencia para cada iteracion
-        self.convergence_history = []
         # historial de errores entre iteraciones consecutivas
         self.error_history = []
         # numero maximo de iteraciones permitidas
@@ -51,7 +49,6 @@ class GaussSeidelSolver:
         
         # limpiar historiales de iteraciones anteriores
         self.iteration_history = []
-        self.convergence_history = []
         self.error_history = []
         
         # guardar estado inicial en el historial
@@ -77,7 +74,6 @@ class GaussSeidelSolver:
             
             # guardar estado actual en historial
             self.iteration_history.append(x.copy())
-            self.convergence_history.append(self._check_convergence(A, x, b))
             
             # verificar si se alcanzo la convergencia
             if error < self.tolerance:
@@ -87,8 +83,7 @@ class GaussSeidelSolver:
                     'converged': True,
                     'final_error': error,
                     'history': self.iteration_history,
-                    'errors': self.error_history,
-                    'convergence': self.convergence_history
+                    'errors': self.error_history
                 }
         
         # si no convergio en max_iterations, retornar resultado actual
@@ -98,8 +93,7 @@ class GaussSeidelSolver:
             'converged': False,
             'final_error': error,
             'history': self.iteration_history,
-            'errors': self.error_history,
-            'convergence': self.convergence_history
+            'errors': self.error_history
         }
     
     def _is_diagonally_dominant(self, A: np.ndarray) -> bool:
@@ -116,27 +110,7 @@ class GaussSeidelSolver:
                 return False
         return True
     
-    def _check_convergence(self, A: np.ndarray, x: np.ndarray, b: np.ndarray) -> float:
-        """calcula el residuo para verificar convergencia"""
-        # calcular residuo: |Ax - b|
-        # esto mide que tan bien la solucion actual satisface el sistema
-        residuo = np.linalg.norm(A.dot(x) - b)
-        return residuo
     
-    def get_iteration_details(self, iteration: int) -> Dict:
-        """obtiene detalles de una iteracion especifica"""
-        # verificar que el indice de iteracion sea valido
-        if 0 <= iteration < len(self.iteration_history):
-            return {
-                'iteration': iteration,
-                'solution': self.iteration_history[iteration],
-                # error respecto a la iteracion anterior (0 para la primera)
-                'error': self.error_history[iteration - 1] if iteration > 0 else 0,
-                # convergencia respecto a la iteracion anterior
-                'convergence': self.convergence_history[iteration - 1] if iteration > 0 else float('inf')
-            }
-        # retornar diccionario vacio si el indice no es valido
-        return {}
     
     def _verify_solution(self, A: np.ndarray, b: np.ndarray, x: np.ndarray) -> Dict:
         """

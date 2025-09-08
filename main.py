@@ -2,7 +2,6 @@
 #Luis Andres Salinas Lozano
 
 import sys
-import os
 import tkinter as tk
 from tkinter import messagebox
 
@@ -19,12 +18,7 @@ def check_dependencies():
         import numpy
     except ImportError:
         missing_deps.append("numpy")
-    
-    try:
-        import matplotlib
-    except ImportError:
-        missing_deps.append("matplotlib")
-    
+        
     if missing_deps:
         deps_str = ", ".join(missing_deps)
         error_msg = f"Faltan dependencias: {deps_str}\n\n"

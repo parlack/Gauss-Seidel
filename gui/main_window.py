@@ -1,8 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
-import numpy as np
-from typing import Optional
 
 from .components import (
     ModernButton, ModernEntry, MatrixInputGrid, 
@@ -31,7 +29,8 @@ class GaussSeidelApp(ctk.CTk):
         # variables de estado de la aplicacion
         self.current_size = 3  # tamano actual del sistema
         self.solver = GaussSeidelSolver()  # instancia del solver
-        self.last_solution = None  # ultima solucion calculada
+        # estado: ultima solucion calculada (no se usa)
+        # eliminado para simplificar
         
         # configurar tema visual
         ctk.set_appearance_mode("light")
@@ -389,11 +388,7 @@ class GaussSeidelApp(ctk.CTk):
             messagebox.showerror("error", error_msg)
             self.size_var.set(str(self.current_size))
     
-    def on_size_change(self, value):
-        """callback cuando cambia el tamano del sistema con optimizacion automatica (mantenido por compatibilidad)"""
-        # esta funcion se mantiene por si se necesita en algun lugar, pero ya no se usa
-        # la nueva funcionalidad esta en accept_size_change()
-        pass
+    
     
     def on_input_change(self):
         """callback cuando cambian los datos de entrada"""

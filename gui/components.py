@@ -1,12 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk
-import numpy as np
 from typing import List, Callable, Optional
-
-# configurar el tema de customtkinter para una apariencia moderna
-ctk.set_appearance_mode("light")
-ctk.set_default_color_theme("blue")
 
 class ModernButton(ctk.CTkButton):
     """
@@ -330,12 +324,7 @@ class VisualizationPanel(ctk.CTkFrame):
         # total de iteraciones del proceso
         self.total_iterations = 0
         # datos completos de todos los pasos
-        self.steps_data = []
-        # etiquetas para variables (x1, x2, etc)
-        self.variable_labels = []
-        # métricas (se mantiene como lista vacía para compatibilidad)
-        self.convergence_metrics = []
-    
+        self.steps_data = []    
     def setup_ui(self):
         # titulo con diseno moderno
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -595,7 +584,7 @@ class VisualizationPanel(ctk.CTkFrame):
         calc_title.pack(pady=(15, 10))
         
         # Mostrar cada cálculo como una tarjeta
-        for i, calc in enumerate(step['calculations']):
+        for calc in step['calculations']:
             calc_card = ctk.CTkFrame(left_column)
             calc_card.pack(fill="x", padx=10, pady=5)
             
@@ -747,10 +736,6 @@ class VisualizationPanel(ctk.CTkFrame):
             self.current_iteration = len(iteration_steps) - 1
             self.update_current_step()
     
-    def update_convergence_plot(self):
-        # pestaña de convergencia eliminada: método no-op para compatibilidad
-        return
-    
     def update_result_display(self):
         """Actualiza la visualización del resultado con diseño moderno"""
         result_step = None
@@ -817,7 +802,6 @@ class VisualizationPanel(ctk.CTkFrame):
         # Calcular número de columnas (máximo 4)
         n_variables = len(result_step['solution'])
         n_cols = min(4, n_variables)
-        n_rows = (n_variables + n_cols - 1) // n_cols
         
         for i, value in enumerate(result_step['solution']):
             row = i // n_cols
@@ -942,7 +926,6 @@ class VisualizationPanel(ctk.CTkFrame):
         if self.current_iteration > 0:
             self.current_iteration -= 1
             self.update_current_step()
-            self.update_convergence_plot()
     
     def next_iteration(self):
         """Ir a la siguiente iteración"""
@@ -950,7 +933,6 @@ class VisualizationPanel(ctk.CTkFrame):
         if self.current_iteration < len(iteration_steps) - 1:
             self.current_iteration += 1
             self.update_current_step()
-            self.update_convergence_plot()
     
     def clear(self):
         """Limpia la visualización moderna"""
