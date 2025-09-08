@@ -4,9 +4,9 @@ from typing import List, Callable, Optional
 
 class ModernButton(ctk.CTkButton):
     """
-    boton moderno personalizado
+    boton personalizado
     
-    extiende ctkbutton con estilos predefinidos para una apariencia moderna
+    extiende ctkbutton con estilos predefinidos 
     incluye configuraciones de esquinas redondeadas, fuentes y dimensiones
     """
     def __init__(self, parent, text, command=None, **kwargs):
@@ -22,7 +22,7 @@ class ModernButton(ctk.CTkButton):
 
 class ModernEntry(ctk.CTkEntry):
     """
-    campo de entrada moderno
+    campo de entrada
     
     extiende ctkentry con estilos predefinidos para campos de entrada
     incluye placeholder text y configuracion de fuentes
@@ -202,7 +202,6 @@ class VectorInputColumn(ctk.CTkFrame):
         self.setup_ui()
     
     def setup_ui(self):
-        # titulo mas compacto para el nuevo layout
         title = ctk.CTkLabel(
             self, 
             text="terminos independientes (b)", 
@@ -308,10 +307,10 @@ class VectorInputColumn(ctk.CTkFrame):
 
 class VisualizationPanel(ctk.CTkFrame):
     """
-    panel para visualizar el proceso de solucion con interfaz moderna
+    panel para visualizar el proceso de solucion con interfaz
     
     componente principal que muestra el proceso iterativo de gauss-seidel
-    incluye navegacion entre iteraciones, graficos de convergencia,
+    incluye navegacion entre iteraciones
     y visualizacion detallada de cada paso del algoritmo
     """
     
@@ -326,7 +325,7 @@ class VisualizationPanel(ctk.CTkFrame):
         # datos completos de todos los pasos
         self.steps_data = []    
     def setup_ui(self):
-        # titulo con diseno moderno
+        # titulo con diseno
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=20, pady=(15, 10))
         
@@ -419,11 +418,11 @@ class VisualizationPanel(ctk.CTkFrame):
         )
         self.last_btn.pack(side="left", padx=2)
         
-        # notebook moderno para diferentes vistas
+        # notebook para diferentes vistas
         self.notebook = ctk.CTkTabview(self, width=1000)
         self.notebook.pack(fill="both", expand=True, padx=20, pady=10)
         
-        # crear tabs principales (sin pestaña de convergencia)
+        # crear tabs principales
         self.notebook.add("vista iterativa")
         self.notebook.add("resultado final")
         
@@ -431,7 +430,7 @@ class VisualizationPanel(ctk.CTkFrame):
         self.setup_result_tab()
     
     def setup_iterations_tab(self):
-        """Configura la tab de iteraciones con diseño moderno"""
+        """Configura la tab de iteraciones con diseño"""
         self.iterations_frame = self.notebook.tab("vista iterativa")
         
         # Scrollable frame para las iteraciones
@@ -448,7 +447,6 @@ class VisualizationPanel(ctk.CTkFrame):
         )
         self.current_iteration_frame.pack(fill="both", expand=True, padx=10, pady=10)
     
-    # pestaña de convergencia eliminada
     
     def setup_result_tab(self):
         """Configura la tab de resultado con diseño atractivo"""
@@ -474,13 +472,7 @@ class VisualizationPanel(ctk.CTkFrame):
         stats_frame = ctk.CTkFrame(self.result_scroll)
         stats_frame.pack(fill="x", padx=10, pady=10)
         
-        stats_title = ctk.CTkLabel(
-            stats_frame,
-            text="📊 Estadísticas del Proceso",
-            font=ctk.CTkFont(size=16, weight="bold")
-        )
-        stats_title.pack(pady=(15, 10))
-        
+
         # Grid de estadísticas
         self.stats_grid = ctk.CTkFrame(stats_frame)
         self.stats_grid.pack(fill="x", padx=20, pady=10)
@@ -506,11 +498,10 @@ class VisualizationPanel(ctk.CTkFrame):
         self.total_iterations = len([s for s in steps_data if s['type'] == 'iteration'])
         self.current_iteration = 0
         self.update_current_step()
-        # pestaña de convergencia eliminada: no se actualizan métricas/gráfico
         self.update_result_display()
     
     def update_current_step(self):
-        """Actualiza la visualización del paso actual con diseño moderno"""
+        """Actualiza la visualización del paso actual"""
         if not self.steps_data:
             return
         
@@ -544,7 +535,7 @@ class VisualizationPanel(ctk.CTkFrame):
         self.update_navigation_buttons()
     
     def create_iteration_card(self, step):
-        """Crea una tarjeta visual moderna para mostrar una iteración"""
+        """Crea una tarjeta visual para mostrar una iteración"""
         # Título de la iteración
         title_frame = ctk.CTkFrame(self.current_iteration_frame, fg_color="transparent")
         title_frame.pack(fill="x", padx=20, pady=(20, 10))
@@ -737,7 +728,7 @@ class VisualizationPanel(ctk.CTkFrame):
             self.update_current_step()
     
     def update_result_display(self):
-        """Actualiza la visualización del resultado con diseño moderno"""
+        """Actualiza la visualización del resultado"""
         result_step = None
         for step in self.steps_data:
             if step['type'] == 'result':
@@ -935,7 +926,7 @@ class VisualizationPanel(ctk.CTkFrame):
             self.update_current_step()
     
     def clear(self):
-        """Limpia la visualización moderna"""
+        """Limpia la visualización"""
         self.steps_data = []
         self.current_iteration = 0
         self.total_iterations = 0
@@ -950,9 +941,7 @@ class VisualizationPanel(ctk.CTkFrame):
         
         # Reiniciar barra de progreso
         self.progress_bar.set(0)
-        
-        # Pestaña de convergencia eliminada: no hay métricas que reiniciar
-        
+                
         # Reiniciar resultado
         self.convergence_status.configure(
             text="⏳ Esperando datos...",

@@ -605,7 +605,7 @@ class GaussSeidelApp(ctk.CTk):
             
             # configurar parametros del solver
             try:
-                # configurar tolerancia para convergencia
+                # configurar tolerancia
                 self.solver.tolerance = float(self.tolerance_var.get())
                 # configurar maximo numero de iteraciones
                 self.solver.max_iterations = int(self.max_iter_var.get())
