@@ -23,8 +23,8 @@ class GaussSeidelApp(ctk.CTk):
         
         # configuracion de la ventana principal
         self.title("resolver sistemas de ecuaciones - metodo de gauss-seidel")
-        self.geometry("1400x900")
-        self.minsize(1200, 800)
+        self.geometry("1280x720")
+        self.minsize(1024, 500)
         
         # variables de estado de la aplicacion
         self.current_size = 3  # tamano actual del sistema

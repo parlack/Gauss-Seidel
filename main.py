@@ -50,7 +50,7 @@ def main():
         # Configurar el protocolo de cierre
         def on_closing():
             """Maneja el cierre de la aplicación"""
-            if messagebox.askokcancel("Salir", "¿Estás seguro de que quieres salir?"):
+            if messagebox.askokcancel("Salir", "¿Estás segurisimoo de que quieres salir de aca?"):
                 app.quit()
                 app.destroy()
                 sys.exit(0)
@@ -92,5 +92,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

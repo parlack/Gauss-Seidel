@@ -18,7 +18,7 @@ class GaussSeidelSolver:
         # numero maximo de iteraciones permitidas
         self.max_iterations = 100
         # tolerancia para determinar convergencia
-        self.tolerance = 1e-6
+        self.tolerance = 0.000001
     
     def solve(self, A: np.ndarray, b: np.ndarray, x0: Optional[np.ndarray] = None) -> Dict:
         """
