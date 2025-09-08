@@ -138,6 +138,100 @@ class GaussSeidelSolver:
         # retornar diccionario vacio si el indice no es valido
         return {}
     
+    def _verify_solution(self, A: np.ndarray, b: np.ndarray, x: np.ndarray) -> Dict:
+        """
+        verifica la solucion sustituyendo en el sistema original
+        retorna informacion detallada de la verificacion
+        """
+        n = len(A)
+        verification_data = {
+            'equations': [],
+            'ax_values': [],  # valores de A*x para cada ecuación
+            'b_values': b.copy(),
+            'residuals': [],  # diferencias |A*x - b| para cada ecuación
+            'total_residual': 0.0
+        }
+        
+        # verificar cada ecuación del sistema
+        for i in range(n):
+            # calcular A[i] * x (producto punto de la fila i con el vector solucion)
+            ax_value = sum(A[i][j] * x[j] for j in range(n))
+            verification_data['ax_values'].append(ax_value)
+            
+            # calcular residual para esta ecuación: |A*x - b|
+            residual = abs(ax_value - b[i])
+            verification_data['residuals'].append(residual)
+            
+            # crear descripcion detallada de la ecuación
+            equation_parts = []
+            for j in range(n):
+                coeff = A[i][j]
+                if j == 0:
+                    # primer termino
+                    if coeff == 1:
+                        equation_parts.append(f"x{j+1}")
+                    elif coeff == -1:
+                        equation_parts.append(f"-x{j+1}")
+                    else:
+                        equation_parts.append(f"{coeff:.3f}x{j+1}")
+                else:
+                    # terminos subsecuentes
+                    if coeff > 0:
+                        if coeff == 1:
+                            equation_parts.append(f" + x{j+1}")
+                        else:
+                            equation_parts.append(f" + {coeff:.3f}x{j+1}")
+                    elif coeff < 0:
+                        if coeff == -1:
+                            equation_parts.append(f" - x{j+1}")
+                        else:
+                            equation_parts.append(f" - {abs(coeff):.3f}x{j+1}")
+                    # si coeff == 0, no agregamos nada
+            
+            equation_str = "".join(equation_parts)
+            
+            # crear sustitucion con valores
+            substitution_parts = []
+            for j in range(n):
+                coeff = A[i][j]
+                if j == 0:
+                    # primer termino
+                    if coeff == 1:
+                        substitution_parts.append(f"({x[j]:.6f})")
+                    elif coeff == -1:
+                        substitution_parts.append(f"-({x[j]:.6f})")
+                    else:
+                        substitution_parts.append(f"{coeff:.3f}({x[j]:.6f})")
+                else:
+                    # terminos subsecuentes
+                    if coeff > 0:
+                        if coeff == 1:
+                            substitution_parts.append(f" + ({x[j]:.6f})")
+                        else:
+                            substitution_parts.append(f" + {coeff:.3f}({x[j]:.6f})")
+                    elif coeff < 0:
+                        if coeff == -1:
+                            substitution_parts.append(f" - ({x[j]:.6f})")
+                        else:
+                            substitution_parts.append(f" - {abs(coeff):.3f}({x[j]:.6f})")
+            
+            substitution_str = "".join(substitution_parts)
+            
+            verification_data['equations'].append({
+                'equation_number': i + 1,
+                'original_equation': f"{equation_str} = {b[i]:.3f}",
+                'substitution': f"{substitution_str} = {ax_value:.6f}",
+                'expected_value': b[i],
+                'calculated_value': ax_value,
+                'residual': residual,
+                'is_accurate': residual < 1e-10  # muy pequeño indica alta precision
+            })
+        
+        # calcular residual total del sistema
+        verification_data['total_residual'] = np.linalg.norm(verification_data['residuals'])
+        
+        return verification_data
+
     def generate_step_by_step(self, A: np.ndarray, b: np.ndarray) -> List[Dict]:
         """
         genera explicacion paso a paso del metodo
@@ -206,14 +300,20 @@ class GaussSeidelSolver:
             
             steps.append(step_data)
         
-        # agregar resultado final
+        # verificar la solucion final sustituyendo en el sistema original
+        verification_data = self._verify_solution(A, b, result['solution'])
+        
+        # agregar resultado final con verificacion
         steps.append({
             'type': 'result',
             'title': 'resultado final',
             'converged': result['converged'],
             'solution': result['solution'],
             'iterations': result['iterations'],
-            'final_error': result['final_error']
+            'final_error': result['final_error'],
+            'verification': verification_data,  # agregar datos de verificacion
+            'original_matrix': A.copy(),
+            'original_vector': b.copy()
         })
         
         return steps

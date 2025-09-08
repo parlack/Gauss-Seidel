@@ -3,9 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 import numpy as np
 from typing import List, Callable, Optional
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 
 # configurar el tema de customtkinter para una apariencia moderna
 ctk.set_appearance_mode("light")
@@ -336,6 +333,8 @@ class VisualizationPanel(ctk.CTkFrame):
         self.steps_data = []
         # etiquetas para variables (x1, x2, etc)
         self.variable_labels = []
+        # métricas (se mantiene como lista vacía para compatibilidad)
+        self.convergence_metrics = []
     
     def setup_ui(self):
         # titulo con diseno moderno
@@ -435,18 +434,16 @@ class VisualizationPanel(ctk.CTkFrame):
         self.notebook = ctk.CTkTabview(self, width=1000)
         self.notebook.pack(fill="both", expand=True, padx=20, pady=10)
         
-        # crear tabs principales
+        # crear tabs principales (sin pestaña de convergencia)
         self.notebook.add("vista iterativa")
-        self.notebook.add("convergencia")
         self.notebook.add("resultado final")
         
         self.setup_iterations_tab()
-        self.setup_convergence_tab()
         self.setup_result_tab()
     
     def setup_iterations_tab(self):
         """Configura la tab de iteraciones con diseño moderno"""
-        self.iterations_frame = self.notebook.tab("📊 Vista Iterativa")
+        self.iterations_frame = self.notebook.tab("vista iterativa")
         
         # Scrollable frame para las iteraciones
         self.scroll_frame = ctk.CTkScrollableFrame(
@@ -462,54 +459,18 @@ class VisualizationPanel(ctk.CTkFrame):
         )
         self.current_iteration_frame.pack(fill="both", expand=True, padx=10, pady=10)
     
-    def setup_convergence_tab(self):
-        """Configura la tab de convergencia con gráfico mejorado"""
-        self.convergence_frame = self.notebook.tab("📈 Convergencia")
-        
-        # Frame para métricas
-        metrics_frame = ctk.CTkFrame(self.convergence_frame)
-        metrics_frame.pack(fill="x", padx=10, pady=10)
-        
-        # Métricas de convergencia
-        self.convergence_metrics = []
-        metrics_titles = ["🎯 Error Actual", "📉 Tasa de Convergencia", "⏱️ Iteraciones"]
-        
-        for i, title in enumerate(metrics_titles):
-            metric_frame = ctk.CTkFrame(metrics_frame)
-            metric_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
-            
-            ctk.CTkLabel(
-                metric_frame,
-                text=title,
-                font=ctk.CTkFont(size=12, weight="bold")
-            ).pack(pady=(10, 5))
-            
-            metric_label = ctk.CTkLabel(
-                metric_frame,
-                text="0.000000",
-                font=ctk.CTkFont(size=18, weight="bold"),
-                text_color=("#1f538d", "#4a9eff")
-            )
-            metric_label.pack(pady=(0, 10))
-            
-            self.convergence_metrics.append(metric_label)
-        
-        # Gráfico de convergencia
-        self.convergence_fig = Figure(figsize=(10, 6), dpi=100, facecolor='white')
-        self.convergence_ax = self.convergence_fig.add_subplot(111)
-        
-        self.convergence_canvas = FigureCanvasTkAgg(
-            self.convergence_fig,
-            self.convergence_frame
-        )
-        self.convergence_canvas.get_tk_widget().pack(fill="both", expand=True, padx=10, pady=10)
+    # pestaña de convergencia eliminada
     
     def setup_result_tab(self):
         """Configura la tab de resultado con diseño atractivo"""
-        self.result_frame = self.notebook.tab("✅ Resultado Final")
+        self.result_frame = self.notebook.tab("resultado final")
+        
+        # Contenedor con scroll para todo el contenido del resultado
+        self.result_scroll = ctk.CTkScrollableFrame(self.result_frame)
+        self.result_scroll.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Header del resultado
-        result_header = ctk.CTkFrame(self.result_frame)
+        result_header = ctk.CTkFrame(self.result_scroll)
         result_header.pack(fill="x", padx=10, pady=10)
         
         self.convergence_status = ctk.CTkLabel(
@@ -521,7 +482,7 @@ class VisualizationPanel(ctk.CTkFrame):
         self.convergence_status.pack(pady=20)
         
         # Estadísticas del proceso
-        stats_frame = ctk.CTkFrame(self.result_frame)
+        stats_frame = ctk.CTkFrame(self.result_scroll)
         stats_frame.pack(fill="x", padx=10, pady=10)
         
         stats_title = ctk.CTkLabel(
@@ -536,7 +497,7 @@ class VisualizationPanel(ctk.CTkFrame):
         self.stats_grid.pack(fill="x", padx=20, pady=10)
         
         # Solución visual
-        solution_frame = ctk.CTkFrame(self.result_frame)
+        solution_frame = ctk.CTkFrame(self.result_scroll)
         solution_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
         solution_title = ctk.CTkLabel(
@@ -556,7 +517,7 @@ class VisualizationPanel(ctk.CTkFrame):
         self.total_iterations = len([s for s in steps_data if s['type'] == 'iteration'])
         self.current_iteration = 0
         self.update_current_step()
-        self.update_convergence_plot()
+        # pestaña de convergencia eliminada: no se actualizan métricas/gráfico
         self.update_result_display()
     
     def update_current_step(self):
@@ -778,7 +739,6 @@ class VisualizationPanel(ctk.CTkFrame):
         if self.current_iteration > 0:
             self.current_iteration = 0
             self.update_current_step()
-            self.update_convergence_plot()
     
     def last_iteration(self):
         """Ir a la última iteración"""
@@ -786,65 +746,10 @@ class VisualizationPanel(ctk.CTkFrame):
         if self.current_iteration < len(iteration_steps) - 1:
             self.current_iteration = len(iteration_steps) - 1
             self.update_current_step()
-            self.update_convergence_plot()
     
     def update_convergence_plot(self):
-        """Actualiza el gráfico de convergencia mejorado"""
-        iteration_steps = [s for s in self.steps_data if s['type'] == 'iteration']
-        
-        if not iteration_steps:
-            return
-        
-        errors = [step['error'] for step in iteration_steps]
-        iterations = list(range(1, len(errors) + 1))
-        
-        # Actualizar métricas
-        if self.current_iteration < len(errors):
-            current_error = errors[self.current_iteration]
-            self.convergence_metrics[0].configure(text=f"{current_error:.2e}")
-            
-            # Calcular tasa de convergencia
-            if self.current_iteration > 0:
-                rate = errors[self.current_iteration-1] / current_error if current_error > 0 else float('inf')
-                self.convergence_metrics[1].configure(text=f"{rate:.2f}")
-            else:
-                self.convergence_metrics[1].configure(text="N/A")
-            
-            self.convergence_metrics[2].configure(text=f"{self.current_iteration + 1}")
-        
-        # Limpiar y configurar gráfico
-        self.convergence_ax.clear()
-        
-        # Gráfico principal
-        line = self.convergence_ax.semilogy(iterations, errors, 'b-', linewidth=3, alpha=0.7, label='Error por iteración')
-        self.convergence_ax.semilogy(iterations, errors, 'bo', markersize=8, alpha=0.8)
-        
-        # Resaltar iteración actual
-        if self.current_iteration < len(errors):
-            self.convergence_ax.semilogy(
-                self.current_iteration + 1,
-                errors[self.current_iteration],
-                'ro',
-                markersize=12,
-                label=f'Iteración actual: {self.current_iteration + 1}',
-                zorder=10
-            )
-        
-        # Estilo mejorado
-        self.convergence_ax.set_xlabel('Iteración', fontsize=13, fontweight='bold')
-        self.convergence_ax.set_ylabel('Error (escala logarítmica)', fontsize=13, fontweight='bold')
-        self.convergence_ax.set_title('🔄 Convergencia del Método de Gauss-Seidel', fontsize=15, fontweight='bold', pad=20)
-        
-        # Grid y estilo
-        self.convergence_ax.grid(True, alpha=0.3, linestyle='--')
-        self.convergence_ax.legend(fontsize=11, framealpha=0.9)
-        
-        # Colores y estilo
-        self.convergence_ax.spines['top'].set_visible(False)
-        self.convergence_ax.spines['right'].set_visible(False)
-        
-        self.convergence_fig.tight_layout()
-        self.convergence_canvas.draw()
+        # pestaña de convergencia eliminada: método no-op para compatibilidad
+        return
     
     def update_result_display(self):
         """Actualiza la visualización del resultado con diseño moderno"""
@@ -875,10 +780,8 @@ class VisualizationPanel(ctk.CTkFrame):
         
         # Crear estadísticas visuales
         stats_data = [
-            ("🎯 Convergió", "Sí" if result_step['converged'] else "No"),
             ("🔄 Iteraciones", str(result_step['iterations'])),
-            ("📉 Error Final", f"{result_step['final_error']:.2e}"),
-            ("⏱️ Precisión", f"{result_step['final_error']:.8f}")
+            ("📉 Error Final", f"{result_step['final_error']:.8f}")
         ]
         
         for i, (label, value) in enumerate(stats_data):
@@ -909,7 +812,7 @@ class VisualizationPanel(ctk.CTkFrame):
         
         # Mostrar solución en formato visual atractivo
         solution_grid = ctk.CTkFrame(self.solution_container)
-        solution_grid.pack(fill="both", expand=True, padx=10, pady=10)
+        solution_grid.pack(fill="x", padx=10, pady=10)
         
         # Calcular número de columnas (máximo 4)
         n_variables = len(result_step['solution'])
@@ -944,7 +847,96 @@ class VisualizationPanel(ctk.CTkFrame):
         # Configurar grid para que se expanda
         for col in range(n_cols):
             solution_grid.grid_columnconfigure(col, weight=1)
-    
+        
+        # Agregar sección de verificación por sustitución si está disponible
+        if 'verification' in result_step:
+            verification_frame = ctk.CTkFrame(self.solution_container)
+            verification_frame.pack(fill="both", expand=True, padx=10, pady=10)
+            
+            # Título de la verificación
+            verification_title = ctk.CTkLabel(
+                verification_frame,
+                text="🔍 Verificación por Sustitución",
+                font=ctk.CTkFont(size=16, weight="bold")
+            )
+            verification_title.pack(pady=(15, 10))
+            
+            # Mensaje explicativo
+            explanation_label = ctk.CTkLabel(
+                verification_frame,
+                text="Sustituyendo los valores encontrados en el sistema original:",
+                font=ctk.CTkFont(size=12),
+                text_color="gray60"
+            )
+            explanation_label.pack(pady=(0, 10))
+            
+            # Contenedor para las ecuaciones verificadas
+            equations_container = ctk.CTkScrollableFrame(
+                verification_frame,
+                height=min(400, len(result_step['verification']['equations']) * 120 + 50)
+            )
+            equations_container.pack(fill="both", expand=True, padx=10, pady=10)
+            
+            # Mostrar cada ecuación y su verificación
+            verification_data = result_step['verification']
+            for eq_data in verification_data['equations']:
+                equation_frame = ctk.CTkFrame(equations_container)
+                equation_frame.pack(fill="x", padx=5, pady=5)
+                
+                # Header de la ecuación
+                eq_header = ctk.CTkFrame(equation_frame)
+                eq_header.pack(fill="x", padx=10, pady=(10, 5))
+                
+                # Número de ecuación
+                eq_number = ctk.CTkLabel(
+                    eq_header,
+                    text=f"Ecuación {eq_data['equation_number']}:",
+                    font=ctk.CTkFont(size=14, weight="bold"),
+                    text_color=("#1f538d", "#4a9eff")
+                )
+                eq_number.pack(side="left")
+                
+                # Ecuación original
+                original_label = ctk.CTkLabel(
+                    equation_frame,
+                    text=f"Original: {eq_data['original_equation']}",
+                    font=ctk.CTkFont(size=12),
+                    anchor="w"
+                )
+                original_label.pack(fill="x", padx=15, pady=2)
+                
+                # Sustitución
+                substitution_label = ctk.CTkLabel(
+                    equation_frame,
+                    text=f"Sustitución: {eq_data['substitution']}",
+                    font=ctk.CTkFont(size=12),
+                    text_color=("#d32f2f", "#f44336"),
+                    anchor="w",
+                    wraplength=800
+                )
+                substitution_label.pack(fill="x", padx=15, pady=2)
+                
+                # Comparación de valores
+                comparison_frame = ctk.CTkFrame(equation_frame)
+                comparison_frame.pack(fill="x", padx=15, pady=(5, 10))
+                
+                # Valor esperado vs calculado
+                expected_label = ctk.CTkLabel(
+                    comparison_frame,
+                    text=f"Esperado: {eq_data['expected_value']:.6f}",
+                    font=ctk.CTkFont(size=11)
+                )
+                expected_label.pack(side="left", padx=10, pady=5)
+                
+                calculated_label = ctk.CTkLabel(
+                    comparison_frame,
+                    text=f"Calculado: {eq_data['calculated_value']:.6f}",
+                    font=ctk.CTkFont(size=11),
+                    text_color=("#d32f2f", "#f44336")
+                )
+                calculated_label.pack(side="left", padx=10, pady=5)
+                
+
     def prev_iteration(self):
         """Ir a la iteración anterior"""
         if self.current_iteration > 0:
@@ -977,13 +969,7 @@ class VisualizationPanel(ctk.CTkFrame):
         # Reiniciar barra de progreso
         self.progress_bar.set(0)
         
-        # Limpiar métricas de convergencia
-        for metric in self.convergence_metrics:
-            metric.configure(text="0.000000")
-        
-        # Limpiar gráfico
-        self.convergence_ax.clear()
-        self.convergence_canvas.draw()
+        # Pestaña de convergencia eliminada: no hay métricas que reiniciar
         
         # Reiniciar resultado
         self.convergence_status.configure(

@@ -119,16 +119,31 @@ class GaussSeidelApp(ctk.CTk):
             font=ctk.CTkFont(size=14, weight="bold")
         ).pack(side="left", padx=10, pady=10)
         
-        # combobox para seleccionar tamano (2x2 a 10x10)
+        # campo de entrada para tamano del sistema
         self.size_var = tk.StringVar(value=str(self.current_size))
-        self.size_spinbox = ctk.CTkComboBox(
+        self.size_entry = ModernEntry(
             size_frame,
-            values=[str(i) for i in range(2, 11)],
-            variable=self.size_var,
-            command=self.on_size_change,
-            width=100
+            textvariable=self.size_var,
+            width=80,
+            placeholder="n",
+            font=ctk.CTkFont(size=12, weight="bold")
         )
-        self.size_spinbox.pack(side="left", padx=5, pady=10)
+        self.size_entry.pack(side="left", padx=5, pady=10)
+        
+        # permitir presionar enter para aceptar
+        self.size_entry.bind('<Return>', lambda event: self.accept_size_change())
+        
+        # boton de aceptar tamano con icono de palomita
+        self.accept_size_btn = ModernButton(
+            size_frame,
+            text="✓",
+            command=self.accept_size_change,
+            width=40,
+            height=35,
+            fg_color="green",
+            font=ctk.CTkFont(size=16, weight="bold")
+        )
+        self.accept_size_btn.pack(side="left", padx=3, pady=10)
         
         # botones de control
         buttons_frame = ctk.CTkFrame(controls_frame)
@@ -143,6 +158,19 @@ class GaussSeidelApp(ctk.CTk):
             width=120
         ).pack(side="left", padx=5, pady=5)
         
+
+        # boton principal de resolver - en la parte inferior del frame derecho
+        self.solve_button = ModernButton(
+            buttons_frame,
+            text="resolver sistema",
+            command=self.solve_system,
+            height=55,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            fg_color="#1f538d"
+        )
+        self.solve_button.pack(fill="x", padx=10, pady=(10, 15), side="bottom")
+        
+
         # boton para cargar ejemplo
         ModernButton(
             buttons_frame,
@@ -276,17 +304,6 @@ class GaussSeidelApp(ctk.CTk):
         )
         initial_checkbox.pack(pady=(0, 8))
         
-        # boton principal de resolver - en la parte inferior del frame derecho
-        self.solve_button = ModernButton(
-            right_frame,
-            text="resolver sistema",
-            command=self.solve_system,
-            height=55,
-            font=ctk.CTkFont(size=16, weight="bold"),
-            fg_color="#1f538d"
-        )
-        self.solve_button.pack(fill="x", padx=10, pady=(10, 15), side="bottom")
-        
         # barra de estado para mostrar mensajes al usuario
         self.status_label = ctk.CTkLabel(
             input_tab,
@@ -317,37 +334,66 @@ class GaussSeidelApp(ctk.CTk):
         # aplicar geometria centrada
         self.geometry(f'{width}x{height}+{x}+{y}')
     
-    def on_size_change(self, value):
-        """callback cuando cambia el tamano del sistema con optimizacion automatica"""
+    def accept_size_change(self):
+        """acepta y valida el cambio de tamano del sistema"""
         try:
-            new_size = int(value)
-            # solo actualizar si el tamano realmente cambio
+            value_str = self.size_var.get().strip()
+            if not value_str:
+                self.update_status("por favor ingresa un tamano para el sistema", is_error=True)
+                messagebox.showerror("error", "debes ingresar un tamano para el sistema")
+                return
+            new_size = int(value_str)
+            if new_size < 2:
+                self.update_status("el tamano del sistema debe ser mayor o igual a 2", is_error=True)
+                messagebox.showerror("error", "el tamano del sistema debe ser al menos 2x2")
+                self.size_var.set(str(self.current_size))
+                return
+            if new_size > 50:
+                result = messagebox.askyesno(
+                    "advertencia - sistema grande",
+                    f"estas creando un sistema de {new_size}x{new_size} ({new_size*new_size} coeficientes).\n\n"
+                    f"sistemas muy grandes pueden ser lentos de procesar y ocupar mucha memoria.\n\n"
+                    f"¿deseas continuar?"
+                )
+                if not result:
+                    self.size_var.set(str(self.current_size))
+                    return
             if new_size != self.current_size:
                 self.current_size = new_size
-                # redimensionar componentes de entrada
                 self.matrix_input.resize_grid(new_size)
                 self.vector_input.resize_entries(new_size)
-                # actualizar etiqueta informativa
                 self.system_info_label.configure(text=f"sistema: {new_size}x{new_size}")
-                
-                # auto-optimizacion de la ventana para sistemas grandes
-                if new_size >= 7:
-                    # para sistemas grandes, maximizar la ventana automaticamente
-                    self.state('zoomed')  # maximizar en windows
-                    self.update_status("ventana maximizada automaticamente para mejor visualizacion")
+                if new_size >= 15:
+                    self.state('zoomed')
+                    self.update_status(f"sistema {new_size}x{new_size} creado - ventana maximizada automaticamente")
+                elif new_size >= 8:
+                    self.geometry("1600x1000")
+                    self.update_status(f"sistema {new_size}x{new_size} creado - ventana redimensionada")
                 elif new_size >= 5:
-                    # para sistemas medianos, aumentar el tamano de la ventana
                     self.geometry("1500x950")
-                    self.update_status("ventana redimensionada para mejor visualizacion")
+                    self.update_status(f"sistema {new_size}x{new_size} creado")
                 else:
-                    # para sistemas pequenos, tamano normal
                     self.geometry("1400x900")
-                    self.update_status("tamano del sistema actualizado")
-                
-                # forzar actualizacion del layout
+                    self.update_status(f"sistema {new_size}x{new_size} creado")
+                self.visualization_panel.clear()
                 self.update_idletasks()
+            else:
+                self.update_status("el tamano ya es el mismo")
         except ValueError:
-            pass
+            self.update_status("por favor ingresa un numero valido", is_error=True)
+            messagebox.showerror("error", f"'{self.size_var.get()}' no es un numero valido")
+            self.size_var.set(str(self.current_size))
+        except Exception as e:
+            error_msg = f"error inesperado: {str(e)}"
+            self.update_status(error_msg, is_error=True)
+            messagebox.showerror("error", error_msg)
+            self.size_var.set(str(self.current_size))
+    
+    def on_size_change(self, value):
+        """callback cuando cambia el tamano del sistema con optimizacion automatica (mantenido por compatibilidad)"""
+        # esta funcion se mantiene por si se necesita en algun lugar, pero ya no se usa
+        # la nueva funcionalidad esta en accept_size_change()
+        pass
     
     def on_input_change(self):
         """callback cuando cambian los datos de entrada"""

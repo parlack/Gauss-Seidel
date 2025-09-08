@@ -1,11 +1,5 @@
-#!/usr/bin/env python3
-"""
-Aplicación para resolver sistemas de ecuaciones lineales usando el método de Gauss-Seidel
-con interfaz gráfica moderna y visualización paso a paso.
-
-Autor: AI Assistant
-Fecha: 2024
-"""
+#Andres Monsivais Salazar4
+#Luis Andres Salinas Lozano
 
 import sys
 import os
@@ -68,23 +62,7 @@ def main():
                 sys.exit(0)
         
         app.protocol("WM_DELETE_WINDOW", on_closing)
-        
-        # Mostrar mensaje de bienvenida
-        print("="*60)
-        print("🔢 RESOLVER SISTEMAS DE ECUACIONES - GAUSS-SEIDEL")
-        print("="*60)
-        print("✨ Interfaz gráfica moderna cargada exitosamente")
-        print("📊 Visualización paso a paso habilitada")
-        print("🚀 ¡La aplicación está lista para usar!")
-        print("="*60)
-        print()
-        print("💡 Consejos de uso:")
-        print("   • Para mejor convergencia, usa matrices diagonalmente dominantes")
-        print("   • Ajusta la tolerancia según la precisión requerida")
-        print("   • Usa el botón 'Ejemplo' para cargar sistemas de prueba")
-        print("   • Navega entre iteraciones en la pestaña 'Proceso de Solución'")
-        print()
-        
+                
         # Iniciar la aplicación
         app.mainloop()
         
