@@ -12,103 +12,114 @@ from solver.gauss_seidel import GaussSeidelSolver
 from utils.validators import EquationValidator
 
 class GaussSeidelApp(ctk.CTk):
-    """Aplicación principal para resolver sistemas con Gauss-Seidel"""
+    """
+    aplicacion principal para resolver sistemas con gauss-seidel
+    
+    interfaz grafica principal que integra todos los componentes
+    para resolver sistemas de ecuaciones lineales usando el metodo
+    iterativo de gauss-seidel con visualizacion paso a paso
+    """
     
     def __init__(self):
         super().__init__()
         
-        # Configuración de la ventana
-        self.title("Resolver Sistemas de Ecuaciones - Método de Gauss-Seidel")
+        # configuracion de la ventana principal
+        self.title("resolver sistemas de ecuaciones - metodo de gauss-seidel")
         self.geometry("1400x900")
         self.minsize(1200, 800)
         
-        # Variables
-        self.current_size = 3
-        self.solver = GaussSeidelSolver()
-        self.last_solution = None
+        # variables de estado de la aplicacion
+        self.current_size = 3  # tamano actual del sistema
+        self.solver = GaussSeidelSolver()  # instancia del solver
+        self.last_solution = None  # ultima solucion calculada
         
-        # Configurar tema
+        # configurar tema visual
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
         
+        # configurar interfaz de usuario
         self.setup_ui()
+        # centrar ventana en pantalla
         self.center_window()
     
     def setup_ui(self):
-        """Configura la interfaz de usuario"""
+        """configura la interfaz de usuario principal"""
         
-        # Frame principal
+        # frame principal que contiene todo
         main_frame = ctk.CTkFrame(self, corner_radius=0)
         main_frame.pack(fill="both", expand=True)
         
-        # Header
+        # crear header con titulo y informacion
         self.create_header(main_frame)
         
-        # Frame de contenido principal
+        # frame de contenido principal
         content_frame = ctk.CTkFrame(main_frame)
         content_frame.pack(fill="both", expand=True, padx=20, pady=10)
         
-        # Crear notebook principal
+        # crear notebook principal con pestanas
         self.main_notebook = ctk.CTkTabview(content_frame)
         self.main_notebook.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Tabs
+        # configurar pestanas principales
         self.setup_input_tab()
         self.setup_solution_tab()
     
     def create_header(self, parent):
-        """Crea el header de la aplicación"""
+        """crea el header de la aplicacion con titulo e informacion"""
         header_frame = ctk.CTkFrame(parent, height=100, corner_radius=0)
         header_frame.pack(fill="x", padx=0, pady=0)
         header_frame.pack_propagate(False)
         
-        # Título principal
+        # titulo principal de la aplicacion
         title_label = ctk.CTkLabel(
             header_frame,
-            text="🔢 Resolver Sistemas de Ecuaciones Lineales",
+            text="resolver sistemas de ecuaciones lineales",
             font=ctk.CTkFont(size=28, weight="bold"),
             text_color=("gray10", "gray90")
         )
         title_label.pack(side="left", padx=30, pady=25)
         
-        # Subtítulo
+        # subtitulo explicativo
         subtitle_label = ctk.CTkLabel(
             header_frame,
-            text="Método iterativo de Gauss-Seidel con visualización paso a paso",
+            text="metodo iterativo de gauss-seidel con visualizacion paso a paso",
             font=ctk.CTkFont(size=14),
             text_color=("gray50", "gray50")
         )
         subtitle_label.pack(side="left", padx=(0, 30), pady=(45, 5))
         
-        # Información del sistema actual
+        # informacion del sistema actual
         info_frame = ctk.CTkFrame(header_frame)
         info_frame.pack(side="right", padx=30, pady=20)
         
+        # etiqueta que muestra el tamano actual del sistema
         self.system_info_label = ctk.CTkLabel(
             info_frame,
-            text=f"Sistema: {self.current_size}×{self.current_size}",
+            text=f"sistema: {self.current_size}x{self.current_size}",
             font=ctk.CTkFont(size=16, weight="bold")
         )
         self.system_info_label.pack(padx=15, pady=10)
     
     def setup_input_tab(self):
-        """Configura la pestaña de entrada de datos"""
-        input_tab = self.main_notebook.add("📝 Entrada de Datos")
+        """configura la pestana de entrada de datos"""
+        input_tab = self.main_notebook.add("entrada de datos")
         
-        # Frame de controles superiores
+        # frame de controles superiores
         controls_frame = ctk.CTkFrame(input_tab)
         controls_frame.pack(fill="x", padx=10, pady=10)
         
-        # Selector de tamaño del sistema
+        # selector de tamano del sistema
         size_frame = ctk.CTkFrame(controls_frame)
         size_frame.pack(side="left", padx=10, pady=10)
         
+        # etiqueta para selector de tamano
         ctk.CTkLabel(
             size_frame,
-            text="Tamaño del Sistema:",
+            text="tamano del sistema:",
             font=ctk.CTkFont(size=14, weight="bold")
         ).pack(side="left", padx=10, pady=10)
         
+        # combobox para seleccionar tamano (2x2 a 10x10)
         self.size_var = tk.StringVar(value=str(self.current_size))
         self.size_spinbox = ctk.CTkComboBox(
             size_frame,
@@ -119,43 +130,46 @@ class GaussSeidelApp(ctk.CTk):
         )
         self.size_spinbox.pack(side="left", padx=5, pady=10)
         
-        # Botones de control
+        # botones de control
         buttons_frame = ctk.CTkFrame(controls_frame)
         buttons_frame.pack(side="right", padx=10, pady=10)
         
+        # boton para limpiar todo
         ModernButton(
             buttons_frame,
-            text="🧹 Limpiar Todo",
+            text="limpiar todo",
             command=self.clear_all_inputs,
             fg_color="gray50",
             width=120
         ).pack(side="left", padx=5, pady=5)
         
+        # boton para cargar ejemplo
         ModernButton(
             buttons_frame,
-            text="📋 Ejemplo",
+            text="ejemplo",
             command=self.load_example,
             fg_color="orange",
             width=120
         ).pack(side="left", padx=5, pady=5)
         
+        # boton para validar entrada
         ModernButton(
             buttons_frame,
-            text="✅ Validar",
+            text="validar",
             command=self.validate_input,
             fg_color="green",
             width=120
         ).pack(side="left", padx=5, pady=5)
         
-        # Frame principal para matriz y vector
+        # frame principal para matriz y vector
         input_main_frame = ctk.CTkFrame(input_tab)
         input_main_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Frame izquierdo para la matriz
+        # frame izquierdo para la matriz de coeficientes
         left_frame = ctk.CTkFrame(input_main_frame)
         left_frame.pack(side="left", fill="both", expand=True, padx=(10, 5), pady=10)
         
-        # Matriz de coeficientes
+        # widget para ingresar matriz de coeficientes
         self.matrix_input = MatrixInputGrid(
             left_frame,
             size=self.current_size,
@@ -163,18 +177,19 @@ class GaussSeidelApp(ctk.CTk):
         )
         self.matrix_input.pack(fill="both", expand=True)
         
-        # Frame derecho con dos columnas para mejor uso del espacio
+        # frame derecho con dos columnas para mejor uso del espacio
         right_frame = ctk.CTkFrame(input_main_frame)
         right_frame.pack(side="right", fill="both", padx=(5, 10), pady=10)
         
-        # Contenedor principal para las dos columnas
+        # contenedor principal para las dos columnas
         columns_container = ctk.CTkFrame(right_frame)
         columns_container.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Columna izquierda: Vector de términos independientes
+        # columna izquierda: vector de terminos independientes
         vector_column = ctk.CTkFrame(columns_container)
         vector_column.pack(side="left", fill="both", expand=True, padx=(0, 5))
         
+        # widget para ingresar vector de terminos independientes
         self.vector_input = VectorInputColumn(
             vector_column,
             size=self.current_size,
@@ -182,32 +197,34 @@ class GaussSeidelApp(ctk.CTk):
         )
         self.vector_input.pack(fill="both", expand=True)
         
-        # Columna derecha: Configuración del solver
+        # columna derecha: configuracion del solver
         config_column = ctk.CTkFrame(columns_container)
         config_column.pack(side="right", fill="both", expand=True, padx=(5, 0))
         
-        # Título de configuración
+        # titulo de configuracion
         config_title = ctk.CTkLabel(
             config_column,
-            text="Configuración del Solver",
+            text="configuracion del solver",
             font=ctk.CTkFont(size=14, weight="bold")
         )
         config_title.pack(pady=(15, 20))
         
-        # Frame contenedor para los controles
+        # frame contenedor para los controles del solver
         solver_controls_frame = ctk.CTkFrame(config_column)
         solver_controls_frame.pack(fill="x", padx=10, pady=5)
         
-        # Tolerancia
+        # configuracion de tolerancia
         tol_frame = ctk.CTkFrame(solver_controls_frame)
         tol_frame.pack(fill="x", padx=10, pady=8)
         
+        # etiqueta para tolerancia
         ctk.CTkLabel(
             tol_frame,
-            text="Tolerancia:",
+            text="tolerancia:",
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(pady=(8, 4))
         
+        # campo para ingresar tolerancia
         self.tolerance_var = tk.StringVar(value="1e-6")
         self.tolerance_entry = ModernEntry(
             tol_frame,
@@ -217,16 +234,18 @@ class GaussSeidelApp(ctk.CTk):
         )
         self.tolerance_entry.pack(pady=(0, 8))
         
-        # Máximo de iteraciones
+        # configuracion de maximo de iteraciones
         max_iter_frame = ctk.CTkFrame(solver_controls_frame)
         max_iter_frame.pack(fill="x", padx=10, pady=8)
         
+        # etiqueta para maximo de iteraciones
         ctk.CTkLabel(
             max_iter_frame,
-            text="Máx. Iteraciones:",
+            text="max. iteraciones:",
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(pady=(8, 4))
         
+        # campo para ingresar maximo de iteraciones
         self.max_iter_var = tk.StringVar(value="100")
         self.max_iter_entry = ModernEntry(
             max_iter_frame,
@@ -236,29 +255,31 @@ class GaussSeidelApp(ctk.CTk):
         )
         self.max_iter_entry.pack(pady=(0, 8))
         
-        # Vector inicial (opcional)
+        # configuracion de vector inicial (opcional)
         initial_frame = ctk.CTkFrame(solver_controls_frame)
         initial_frame.pack(fill="x", padx=10, pady=8)
         
+        # etiqueta para vector inicial
         ctk.CTkLabel(
             initial_frame,
-            text="Vector Inicial:",
+            text="vector inicial:",
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(pady=(8, 4))
         
+        # checkbox para usar vector cero como inicial
         self.use_zero_initial = tk.BooleanVar(value=True)
         initial_checkbox = ctk.CTkCheckBox(
             initial_frame,
-            text="Usar vector cero",
+            text="usar vector cero",
             variable=self.use_zero_initial,
             font=ctk.CTkFont(size=11)
         )
         initial_checkbox.pack(pady=(0, 8))
         
-        # Botón de resolver - ahora en la parte inferior del frame derecho
+        # boton principal de resolver - en la parte inferior del frame derecho
         self.solve_button = ModernButton(
             right_frame,
-            text="🚀 RESOLVER SISTEMA",
+            text="resolver sistema",
             command=self.solve_system,
             height=55,
             font=ctk.CTkFont(size=16, weight="bold"),
@@ -266,72 +287,84 @@ class GaussSeidelApp(ctk.CTk):
         )
         self.solve_button.pack(fill="x", padx=10, pady=(10, 15), side="bottom")
         
-        # Status bar
+        # barra de estado para mostrar mensajes al usuario
         self.status_label = ctk.CTkLabel(
             input_tab,
-            text="💡 Introduce los coeficientes del sistema de ecuaciones",
+            text="introduce los coeficientes del sistema de ecuaciones",
             font=ctk.CTkFont(size=12),
             text_color="gray60"
         )
         self.status_label.pack(side="bottom", pady=5)
     
     def setup_solution_tab(self):
-        """Configura la pestaña de solución"""
-        solution_tab = self.main_notebook.add("📊 Proceso de Solución")
+        """configura la pestana de solucion"""
+        solution_tab = self.main_notebook.add("proceso de solucion")
         
-        # Panel de visualización
+        # panel principal de visualizacion del proceso
         self.visualization_panel = VisualizationPanel(solution_tab)
         self.visualization_panel.pack(fill="both", expand=True, padx=10, pady=10)
     
     def center_window(self):
-        """Centra la ventana en la pantalla"""
+        """centra la ventana en la pantalla"""
+        # actualizar geometria para obtener tamano real
         self.update_idletasks()
+        # obtener dimensiones de la ventana
         width = self.winfo_width()
         height = self.winfo_height()
+        # calcular posicion central
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
+        # aplicar geometria centrada
         self.geometry(f'{width}x{height}+{x}+{y}')
     
     def on_size_change(self, value):
-        """Callback cuando cambia el tamaño del sistema con optimización automática"""
+        """callback cuando cambia el tamano del sistema con optimizacion automatica"""
         try:
             new_size = int(value)
+            # solo actualizar si el tamano realmente cambio
             if new_size != self.current_size:
                 self.current_size = new_size
+                # redimensionar componentes de entrada
                 self.matrix_input.resize_grid(new_size)
                 self.vector_input.resize_entries(new_size)
-                self.system_info_label.configure(text=f"Sistema: {new_size}×{new_size}")
+                # actualizar etiqueta informativa
+                self.system_info_label.configure(text=f"sistema: {new_size}x{new_size}")
                 
-                # Auto-optimización de la ventana para sistemas grandes
+                # auto-optimizacion de la ventana para sistemas grandes
                 if new_size >= 7:
-                    # Para sistemas grandes, maximizar la ventana automáticamente
-                    self.state('zoomed')  # Maximizar en Windows
-                    self.update_status("🔍 Ventana maximizada automáticamente para mejor visualización")
+                    # para sistemas grandes, maximizar la ventana automaticamente
+                    self.state('zoomed')  # maximizar en windows
+                    self.update_status("ventana maximizada automaticamente para mejor visualizacion")
                 elif new_size >= 5:
-                    # Para sistemas medianos, aumentar el tamaño de la ventana
+                    # para sistemas medianos, aumentar el tamano de la ventana
                     self.geometry("1500x950")
-                    self.update_status("📐 Ventana redimensionada para mejor visualización")
+                    self.update_status("ventana redimensionada para mejor visualizacion")
                 else:
-                    # Para sistemas pequeños, tamaño normal
+                    # para sistemas pequenos, tamano normal
                     self.geometry("1400x900")
-                    self.update_status("📏 Tamaño del sistema actualizado")
+                    self.update_status("tamano del sistema actualizado")
                 
-                # Forzar actualización del layout
+                # forzar actualizacion del layout
                 self.update_idletasks()
         except ValueError:
             pass
     
     def on_input_change(self):
-        """Callback cuando cambian los datos de entrada"""
-        # Aquí podrías implementar validación en tiempo real
+        """callback cuando cambian los datos de entrada"""
+        # aqui se podria implementar validacion en tiempo real
+        # por ahora solo es un placeholder para futuras funcionalidades
         pass
     
     def clear_all_inputs(self):
-        """Limpia todas las entradas"""
+        """limpia todas las entradas de la interfaz"""
+        # limpiar matriz de coeficientes
         self.matrix_input.clear_all()
+        # limpiar vector de terminos independientes
         self.vector_input.clear_all()
+        # limpiar panel de visualizacion
         self.visualization_panel.clear()
-        self.update_status("🧹 Todas las entradas han sido limpiadas")
+        # actualizar mensaje de estado
+        self.update_status("todas las entradas han sido limpiadas")
     
     def load_example(self):
         """Carga un ejemplo predefinido (incluyendo casos que requieren reordenamiento)"""
@@ -420,155 +453,158 @@ class GaussSeidelApp(ctk.CTk):
         self.update_status(example_msg)
     
     def validate_input(self):
-        """Valida la entrada actual"""
+        """valida la entrada actual del usuario"""
         try:
-            # Obtener valores
+            # obtener valores ingresados por el usuario
             matrix_data = self.matrix_input.get_values()
             vector_data = self.vector_input.get_values()
             
-            # Validar matriz
+            # validar matriz de coeficientes
             is_valid_matrix, matrix_error, matrix_np = EquationValidator.validate_matrix(matrix_data)
             if not is_valid_matrix:
-                self.update_status(f"❌ Error en matriz: {matrix_error}", is_error=True)
-                messagebox.showerror("Error de Validación", f"Matriz: {matrix_error}")
+                self.update_status(f"error en matriz: {matrix_error}", is_error=True)
+                messagebox.showerror("error de validacion", f"matriz: {matrix_error}")
                 return False
             
-            # Validar vector
+            # validar vector de terminos independientes
             is_valid_vector, vector_error, vector_np = EquationValidator.validate_vector(vector_data)
             if not is_valid_vector:
-                self.update_status(f"❌ Error en vector: {vector_error}", is_error=True)
-                messagebox.showerror("Error de Validación", f"Vector: {vector_error}")
+                self.update_status(f"error en vector: {vector_error}", is_error=True)
+                messagebox.showerror("error de validacion", f"vector: {vector_error}")
                 return False
             
-            # Intentar hacer la matriz diagonalmente dominante
+            # intentar hacer la matriz diagonalmente dominante
             dominance_result = EquationValidator.make_diagonally_dominant(matrix_np, vector_np)
             
             if dominance_result['success']:
-                # Actualizar las matrices con la versión optimizada
+                # actualizar las matrices con la version optimizada
                 matrix_np = dominance_result['matrix']
                 vector_np = dominance_result['vector']
                 
-                # Actualizar la interfaz con los nuevos valores
+                # actualizar la interfaz con los nuevos valores
                 self.matrix_input.set_values(matrix_np.tolist())
                 self.vector_input.set_values(vector_np.tolist())
                 
-                # Informar al usuario
+                # informar al usuario sobre los cambios
                 swaps_count = len(dominance_result['swaps_made'])
                 if swaps_count > 0:
-                    success_msg = f"✅ {dominance_result['message']}"
+                    success_msg = f"{dominance_result['message']}"
                     self.update_status(success_msg)
                     
-                    # Mostrar detalles de los intercambios
-                    swaps_details = "Intercambios realizados:\n"
+                    # mostrar detalles de los intercambios realizados
+                    swaps_details = "intercambios realizados:\n"
                     for swap in dominance_result['swaps_made']:
-                        swaps_details += f"• Fila {swap[0]+1} ↔ Fila {swap[1]+1}\n"
+                        swaps_details += f"fila {swap[0]+1} <-> fila {swap[1]+1}\n"
                     
                     messagebox.showinfo(
-                        "Matriz Optimizada",
-                        f"🔧 Sistema reordenado automáticamente\n\n"
+                        "matriz optimizada",
+                        f"sistema reordenado automaticamente\n\n"
                         f"{dominance_result['message']}\n\n"
                         f"{swaps_details}\n"
-                        f"✅ Ahora la matriz es diagonalmente dominante.\n"
-                        f"🚀 La convergencia está garantizada."
+                        f"ahora la matriz es diagonalmente dominante.\n"
+                        f"la convergencia esta garantizada."
                     )
                 else:
-                    self.update_status("✅ La matriz ya es diagonalmente dominante")
+                    self.update_status("la matriz ya es diagonalmente dominante")
             else:
-                # No se pudo hacer diagonalmente dominante
-                warning_msg = f"⚠️ {dominance_result['message']}. La convergencia no está garantizada."
+                # no se pudo hacer diagonalmente dominante
+                warning_msg = f"{dominance_result['message']}. la convergencia no esta garantizada."
                 self.update_status(warning_msg, is_warning=True)
                 result = messagebox.askyesno(
-                    "Advertencia - Convergencia No Garantizada",
-                    f"🔧 Se intentó optimizar la matriz intercambiando filas.\n\n"
-                    f"❌ {dominance_result['message']}\n\n"
-                    f"⚠️ El método de Gauss-Seidel puede no converger.\n\n"
-                    f"¿Deseas continuar de todos modos?"
+                    "advertencia - convergencia no garantizada",
+                    f"se intento optimizar la matriz intercambiando filas.\n\n"
+                    f"{dominance_result['message']}\n\n"
+                    f"el metodo de gauss-seidel puede no converger.\n\n"
+                    f"deseas continuar de todos modos?"
                 )
                 if not result:
                     return False
             
-            self.update_status("✅ Validación exitosa. Sistema listo para resolver")
+            self.update_status("validacion exitosa. sistema listo para resolver")
             return True
             
         except Exception as e:
-            error_msg = f"❌ Error inesperado: {str(e)}"
+            error_msg = f"error inesperado: {str(e)}"
             self.update_status(error_msg, is_error=True)
-            messagebox.showerror("Error", error_msg)
+            messagebox.showerror("error", error_msg)
             return False
     
     def solve_system(self):
-        """Resuelve el sistema de ecuaciones"""
-        # Validar entrada primero
+        """resuelve el sistema de ecuaciones usando gauss-seidel"""
+        # validar entrada primero antes de proceder
         if not self.validate_input():
             return
         
         try:
-            # Obtener valores
+            # obtener valores ingresados por el usuario
             matrix_data = self.matrix_input.get_values()
             vector_data = self.vector_input.get_values()
             
-            # Convertir a numpy arrays
+            # convertir a numpy arrays para procesamiento
             _, _, A = EquationValidator.validate_matrix(matrix_data)
             _, _, b = EquationValidator.validate_vector(vector_data)
             
-            # Intentar optimización automática (sin mostrar mensaje si ya es dominante)
+            # intentar optimizacion automatica (sin mostrar mensaje si ya es dominante)
             dominance_result = EquationValidator.make_diagonally_dominant(A, b)
             
             if dominance_result['success'] and len(dominance_result['swaps_made']) > 0:
-                # Solo actualizar si se hicieron cambios
+                # solo actualizar si se hicieron cambios
                 A = dominance_result['matrix']
                 b = dominance_result['vector']
                 
-                # Actualizar la interfaz silenciosamente
+                # actualizar la interfaz silenciosamente
                 self.matrix_input.set_values(A.tolist())
                 self.vector_input.set_values(b.tolist())
                 
-                # Mensaje discreto en el status
-                self.update_status(f"🔧 Sistema optimizado: {dominance_result['message']}")
+                # mensaje discreto en el status
+                self.update_status(f"sistema optimizado: {dominance_result['message']}")
             elif not dominance_result['success']:
-                # Solo mostrar advertencia si no se pudo optimizar y no es dominante
-                self.update_status("⚠️ Sistema sin dominancia diagonal - convergencia no garantizada", is_warning=True)
+                # solo mostrar advertencia si no se pudo optimizar y no es dominante
+                self.update_status("sistema sin dominancia diagonal - convergencia no garantizada", is_warning=True)
             
-            # Configurar solver
+            # configurar parametros del solver
             try:
+                # configurar tolerancia para convergencia
                 self.solver.tolerance = float(self.tolerance_var.get())
+                # configurar maximo numero de iteraciones
                 self.solver.max_iterations = int(self.max_iter_var.get())
             except ValueError:
-                messagebox.showerror("Error", "Valores de configuración inválidos")
+                messagebox.showerror("error", "valores de configuracion invalidos")
                 return
             
-            # Resolver
-            self.update_status("🔄 Resolviendo sistema...")
-            self.solve_button.configure(text="🔄 Resolviendo...", state="disabled")
+            # iniciar proceso de resolucion
+            self.update_status("resolviendo sistema...")
+            self.solve_button.configure(text="resolviendo...", state="disabled")
             self.update_idletasks()
             
-            # Generar pasos detallados
+            # generar pasos detallados del proceso
             steps_data = self.solver.generate_step_by_step(A, b)
             
-            # Actualizar visualización
+            # actualizar panel de visualizacion con los resultados
             self.visualization_panel.update_visualization(steps_data)
             
-            # Cambiar a la pestaña de solución
-            self.main_notebook.set("📊 Proceso de Solución")
+            # cambiar a la pestana de solucion para mostrar resultados
+            self.main_notebook.set("proceso de solucion")
             
-            # Actualizar status
-            result = steps_data[-1]  # Último paso es el resultado
+            # actualizar status basado en el resultado
+            result = steps_data[-1]  # ultimo paso contiene el resultado final
             if result['converged']:
-                self.update_status("✅ Sistema resuelto con éxito")
+                self.update_status("sistema resuelto con exito")
             else:
-                self.update_status("⚠️ Sistema resuelto (convergencia no alcanzada)", is_warning=True)
+                self.update_status("sistema resuelto (convergencia no alcanzada)", is_warning=True)
             
         except Exception as e:
-            error_msg = f"❌ Error al resolver: {str(e)}"
+            error_msg = f"error al resolver: {str(e)}"
             self.update_status(error_msg, is_error=True)
-            messagebox.showerror("Error de Resolución", error_msg)
+            messagebox.showerror("error de resolucion", error_msg)
         
         finally:
-            # Restaurar botón
-            self.solve_button.configure(text="🚀 RESOLVER SISTEMA", state="normal")
+            # restaurar estado del boton principal
+            self.solve_button.configure(text="resolver sistema", state="normal")
     
     def update_status(self, message: str, is_error: bool = False, is_warning: bool = False):
-        """Actualiza el mensaje de estado"""
+        """actualiza el mensaje de estado en la barra inferior"""
+        # determinar color segun tipo de mensaje
         if is_error:
             color = "red"
         elif is_warning:
@@ -576,5 +612,7 @@ class GaussSeidelApp(ctk.CTk):
         else:
             color = ("gray60", "gray40")
         
+        # actualizar texto y color del label de status
         self.status_label.configure(text=message, text_color=color)
+        # forzar actualizacion inmediata de la interfaz
         self.update_idletasks()

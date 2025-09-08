@@ -7,81 +7,107 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-# Configurar el tema de customtkinter
+# configurar el tema de customtkinter para una apariencia moderna
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
 class ModernButton(ctk.CTkButton):
-    """Botón moderno personalizado"""
+    """
+    boton moderno personalizado
+    
+    extiende ctkbutton con estilos predefinidos para una apariencia moderna
+    incluye configuraciones de esquinas redondeadas, fuentes y dimensiones
+    """
     def __init__(self, parent, text, command=None, **kwargs):
+        # configuracion por defecto para botones modernos
         default_kwargs = {
-            "corner_radius": 8,
-            "font": ctk.CTkFont(size=14, weight="bold"),
-            "height": 40
+            "corner_radius": 8,  # esquinas redondeadas
+            "font": ctk.CTkFont(size=14, weight="bold"),  # fuente en negrita
+            "height": 40  # altura fija
         }
+        # permitir sobreescribir configuraciones default
         default_kwargs.update(kwargs)
         super().__init__(parent, text=text, command=command, **default_kwargs)
 
 class ModernEntry(ctk.CTkEntry):
-    """Campo de entrada moderno"""
+    """
+    campo de entrada moderno
+    
+    extiende ctkentry con estilos predefinidos para campos de entrada
+    incluye placeholder text y configuracion de fuentes
+    """
     def __init__(self, parent, placeholder="", **kwargs):
+        # configuracion por defecto para campos de entrada
         default_kwargs = {
-            "corner_radius": 8,
-            "font": ctk.CTkFont(size=12),
-            "height": 35,
-            "placeholder_text": placeholder
+            "corner_radius": 8,  # esquinas redondeadas
+            "font": ctk.CTkFont(size=12),  # fuente de tamano medio
+            "height": 35,  # altura fija
+            "placeholder_text": placeholder  # texto de ayuda
         }
+        # permitir sobreescribir configuraciones default
         default_kwargs.update(kwargs)
         super().__init__(parent, **default_kwargs)
 
 class MatrixInputGrid(ctk.CTkFrame):
-    """Grid para ingresar matriz de coeficientes"""
+    """
+    grid para ingresar matriz de coeficientes
+    
+    widget personalizado que crea una grilla de campos de entrada para
+    permitir al usuario introducir los coeficientes de la matriz del sistema
+    incluye funcionalidades de redimensionamiento y validacion
+    """
     
     def __init__(self, parent, size=3, on_change: Optional[Callable] = None):
         super().__init__(parent, corner_radius=10)
+        # tamano actual del sistema (nxn)
         self.size = size
+        # callback para notificar cambios
         self.on_change = on_change
+        # matriz de widgets entry para los coeficientes
         self.entries = []
+        # configurar interfaz inicial
         self.setup_ui()
     
     def setup_ui(self):
-        # Título
+        # titulo del componente
         title = ctk.CTkLabel(
             self, 
-            text="Matriz de Coeficientes (A)", 
+            text="matriz de coeficientes (a)", 
             font=ctk.CTkFont(size=16, weight="bold")
         )
         title.pack(pady=(10, 15))
         
-        # Frame para el grid
+        # frame contenedor para el grid de entradas
         self.grid_frame = ctk.CTkFrame(self)
         self.grid_frame.pack(padx=20, pady=10, fill="both", expand=True)
         
+        # crear la grilla inicial
         self.create_grid()
     
     def create_grid(self):
-        """Crea el grid de entradas para la matriz con diseño responsivo optimizado"""
-        # Limpiar entradas existentes
+        """crea el grid de entradas para la matriz con diseno responsivo optimizado"""
+        # limpiar entradas existentes antes de crear nuevas
         for widget in self.grid_frame.winfo_children():
             widget.destroy()
         
-        # Crear frame scrollable si el sistema es grande
+        # crear frame scrollable si el sistema es grande
         if self.size > 4:
-            # Para sistemas grandes, usar frame con scroll
+            # para sistemas grandes, usar frame con scroll para mejor visualizacion
             self.scroll_container = ctk.CTkScrollableFrame(
                 self.grid_frame,
-                width=min(650, self.size * 75),  # Ancho optimizado para el nuevo layout
-                height=min(450, self.size * 50)  # Altura ajustada
+                width=min(650, self.size * 75),  # ancho optimizado
+                height=min(450, self.size * 50)  # altura ajustada
             )
             self.scroll_container.pack(fill="both", expand=True, padx=8, pady=8)
             parent_frame = self.scroll_container
         else:
-            # Para sistemas pequeños, usar frame normal
+            # para sistemas pequenos, usar frame normal
             parent_frame = self.grid_frame
         
+        # inicializar matriz de entradas
         self.entries = []
         
-        # Calcular tamaño óptimo de campos según el tamaño del sistema y el nuevo layout
+        # calcular tamano optimo de campos segun el tamano del sistema
         if self.size <= 3:
             field_width = 85
             font_size = 12
@@ -95,112 +121,136 @@ class MatrixInputGrid(ctk.CTkFrame):
             field_width = 48
             font_size = 9
         
+        # crear grid de entradas nxn
         for i in range(self.size):
             row_entries = []
             for j in range(self.size):
+                # crear campo de entrada con placeholder descriptivo
                 entry = ModernEntry(
                     parent_frame,
-                    placeholder=f"a{i+1}{j+1}",
+                    placeholder=f"a{i+1}{j+1}",  # a11, a12, etc.
                     width=field_width,
                     font=ctk.CTkFont(size=font_size)
                 )
+                # posicionar en la grilla
                 entry.grid(row=i, column=j, padx=2, pady=2)
                 
-                # Bind para detectar cambios
+                # configurar callback para detectar cambios
                 if self.on_change:
                     entry.bind('<KeyRelease>', self._on_entry_change)
                 
                 row_entries.append(entry)
             self.entries.append(row_entries)
         
-        # Configurar peso de columnas para mejor distribución
+        # configurar peso de columnas para mejor distribucion del espacio
         if hasattr(parent_frame, 'grid_columnconfigure'):
             for j in range(self.size):
                 parent_frame.grid_columnconfigure(j, weight=1)
     
     def resize_grid(self, new_size: int):
-        """Redimensiona el grid"""
+        """redimensiona el grid para un nuevo tamano de sistema"""
+        # actualizar tamano y recrear grilla
         self.size = new_size
         self.create_grid()
     
     def get_values(self) -> List[List[str]]:
-        """Obtiene los valores del grid"""
+        """obtiene los valores actuales del grid como lista de listas"""
         values = []
+        # recorrer cada fila de la matriz
         for i in range(self.size):
             row_values = []
+            # recorrer cada columna de la fila
             for j in range(self.size):
                 value = self.entries[i][j].get()
+                # usar "0" como valor por defecto si esta vacio
                 row_values.append(value if value else "0")
             values.append(row_values)
         return values
     
     def set_values(self, values: List[List[float]]):
-        """Establece valores en el grid"""
+        """establece valores en el grid desde una lista de listas"""
+        # iterar solo hasta el minimo entre tamanos para evitar errores
         for i in range(min(self.size, len(values))):
             for j in range(min(self.size, len(values[i]))):
+                # limpiar campo actual
                 self.entries[i][j].delete(0, tk.END)
+                # insertar nuevo valor como string
                 self.entries[i][j].insert(0, str(values[i][j]))
     
     def clear_all(self):
-        """Limpia todas las entradas"""
+        """limpia todas las entradas del grid"""
+        # recorrer toda la matriz y limpiar cada campo
         for i in range(self.size):
             for j in range(self.size):
                 self.entries[i][j].delete(0, tk.END)
     
     def _on_entry_change(self, event):
-        """Callback para cambios en las entradas"""
+        """callback interno para cambios en las entradas"""
+        # notificar cambios si hay callback configurado
         if self.on_change:
             self.on_change()
 
 class VectorInputColumn(ctk.CTkFrame):
-    """Columna para ingresar vector de términos independientes - optimizada para layout de dos columnas"""
+    """
+    columna para ingresar vector de terminos independientes
+    
+    widget optimizado para layout de dos columnas que permite ingresar
+    los terminos independientes del sistema de ecuaciones (vector b)
+    incluye funcionalidades de redimensionamiento y validacion
+    """
     
     def __init__(self, parent, size=3, on_change: Optional[Callable] = None):
         super().__init__(parent, corner_radius=10)
+        # tamano actual del vector (n elementos)
         self.size = size
+        # callback para notificar cambios
         self.on_change = on_change
+        # lista de widgets entry para los terminos independientes
         self.entries = []
+        # configurar interfaz inicial
         self.setup_ui()
     
     def setup_ui(self):
-        # Título más compacto para el nuevo layout
+        # titulo mas compacto para el nuevo layout
         title = ctk.CTkLabel(
             self, 
-            text="Términos Independientes (b)", 
+            text="terminos independientes (b)", 
             font=ctk.CTkFont(size=14, weight="bold")
         )
         title.pack(pady=(15, 12))
         
-        # Frame para las entradas - optimizado para columna
+        # frame para las entradas - optimizado para columna
         self.entries_frame = ctk.CTkFrame(self)
         self.entries_frame.pack(padx=15, pady=(5, 15), fill="both", expand=True)
         
+        # crear las entradas iniciales
         self.create_entries()
     
     def create_entries(self):
-        """Crea las entradas para el vector con diseño responsivo optimizado"""
-        # Limpiar entradas existentes
+        """crea las entradas para el vector con diseno responsivo optimizado"""
+        # limpiar entradas existentes antes de crear nuevas
         for widget in self.entries_frame.winfo_children():
             widget.destroy()
         
-        # Crear frame scrollable si el sistema es muy grande
+        # crear frame scrollable si el sistema es muy grande
         if self.size > 8:
-            # Para sistemas muy grandes, usar frame con scroll
+            # para sistemas muy grandes, usar frame con scroll
             self.scroll_container = ctk.CTkScrollableFrame(
                 self.entries_frame,
-                height=min(350, self.size * 42)
+                height=min(350, self.size * 42)  # altura adaptable
             )
             self.scroll_container.pack(fill="both", expand=True, padx=5, pady=5)
             parent_frame = self.scroll_container
         else:
-            # Para sistemas normales, usar frame normal
+            # para sistemas normales, usar frame normal
             parent_frame = self.entries_frame
         
+        # inicializar lista de entradas
         self.entries = []
         
-        # Calcular tamaño óptimo de campos según el tamaño del sistema
+        # calcular tamano optimo de campos segun el tamano del sistema
         if self.size <= 3:
-            field_width = 130  # Más ancho para el nuevo layout de dos columnas
+            field_width = 130  # mas ancho para el nuevo layout de dos columnas
             font_size = 12
             padding_y = 6
         elif self.size <= 5:
@@ -216,72 +266,91 @@ class VectorInputColumn(ctk.CTkFrame):
             font_size = 9
             padding_y = 3
         
+        # crear entradas verticales para el vector
         for i in range(self.size):
             entry = ModernEntry(
                 parent_frame,
-                placeholder=f"b{i+1}",
+                placeholder=f"b{i+1}",  # b1, b2, etc.
                 width=field_width,
                 font=ctk.CTkFont(size=font_size)
             )
             entry.pack(pady=padding_y)
             
-            # Bind para detectar cambios
+            # configurar callback para detectar cambios
             if self.on_change:
                 entry.bind('<KeyRelease>', self._on_entry_change)
             
             self.entries.append(entry)
     
     def resize_entries(self, new_size: int):
-        """Redimensiona las entradas"""
+        """redimensiona las entradas para un nuevo tamano de vector"""
+        # actualizar tamano y recrear entradas
         self.size = new_size
         self.create_entries()
     
     def get_values(self) -> List[str]:
-        """Obtiene los valores del vector"""
+        """obtiene los valores actuales del vector como lista de strings"""
+        # retornar valores o "0" como default si estan vacios
         return [entry.get() if entry.get() else "0" for entry in self.entries]
     
     def set_values(self, values: List[float]):
-        """Establece valores en el vector"""
+        """establece valores en el vector desde una lista de floats"""
+        # iterar sobre entradas y valores simultaneamente
         for i, entry in enumerate(self.entries):
             if i < len(values):
+                # limpiar campo actual
                 entry.delete(0, tk.END)
+                # insertar nuevo valor como string
                 entry.insert(0, str(values[i]))
     
     def clear_all(self):
-        """Limpia todas las entradas"""
+        """limpia todas las entradas del vector"""
+        # limpiar cada campo de entrada
         for entry in self.entries:
             entry.delete(0, tk.END)
     
     def _on_entry_change(self, event):
-        """Callback para cambios en las entradas"""
+        """callback interno para cambios en las entradas del vector"""
+        # notificar cambios si hay callback configurado
         if self.on_change:
             self.on_change()
 
 class VisualizationPanel(ctk.CTkFrame):
-    """Panel para visualizar el proceso de solución con interfaz moderna"""
+    """
+    panel para visualizar el proceso de solucion con interfaz moderna
+    
+    componente principal que muestra el proceso iterativo de gauss-seidel
+    incluye navegacion entre iteraciones, graficos de convergencia,
+    y visualizacion detallada de cada paso del algoritmo
+    """
     
     def __init__(self, parent):
         super().__init__(parent, corner_radius=10)
+        # configurar interfaz de usuario
         self.setup_ui()
+        # indice de la iteracion actual mostrada
         self.current_iteration = 0
+        # total de iteraciones del proceso
         self.total_iterations = 0
+        # datos completos de todos los pasos
         self.steps_data = []
+        # etiquetas para variables (x1, x2, etc)
         self.variable_labels = []
     
     def setup_ui(self):
-        # Título con diseño moderno
+        # titulo con diseno moderno
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=20, pady=(15, 10))
         
         self.title_label = ctk.CTkLabel(
             header_frame,
-            text="🔬 Proceso de Solución - Método de Gauss-Seidel",
+            text="proceso de solucion - metodo de gauss-seidel",
             font=ctk.CTkFont(size=20, weight="bold"),
             text_color=("#1f538d", "#4a9eff")
         )
         self.title_label.pack(side="left")
         
-        # Indicador de progreso
+        # indicador de progreso visual
         self.progress_frame = ctk.CTkFrame(header_frame)
         self.progress_frame.pack(side="right")
         
@@ -293,77 +362,83 @@ class VisualizationPanel(ctk.CTkFrame):
         )
         self.progress_bar.pack(padx=10, pady=10)
         
-        # Frame de controles mejorado
+        # frame de controles mejorado
         controls_frame = ctk.CTkFrame(self)
         controls_frame.pack(fill="x", padx=20, pady=10)
         
-        # Información de iteración con estilo
+        # informacion de iteracion con estilo
         info_frame = ctk.CTkFrame(controls_frame)
         info_frame.pack(side="left", padx=10, pady=5)
         
+        # etiqueta para mostrar iteracion actual
         self.iteration_label = ctk.CTkLabel(
             info_frame,
-            text="Iteración: 0 / 0",
+            text="iteracion: 0 / 0",
             font=ctk.CTkFont(size=14, weight="bold")
         )
         self.iteration_label.pack(side="left", padx=15, pady=8)
         
+        # etiqueta para mostrar error actual
         self.error_label = ctk.CTkLabel(
             info_frame,
-            text="Error: 0.000000",
+            text="error: 0.000000",
             font=ctk.CTkFont(size=12),
             text_color="gray60"
         )
         self.error_label.pack(side="left", padx=15, pady=8)
         
-        # Botones de navegación mejorados
+        # botones de navegacion mejorados
         nav_frame = ctk.CTkFrame(controls_frame)
         nav_frame.pack(side="right", padx=10, pady=5)
         
+        # boton ir al primero
         self.first_btn = ModernButton(
             nav_frame,
-            text="⏮️ Primero",
+            text="primero",
             command=self.first_iteration,
             width=90,
             height=35
         )
         self.first_btn.pack(side="left", padx=2)
         
+        # boton ir al anterior
         self.prev_btn = ModernButton(
             nav_frame,
-            text="◀️ Anterior",
+            text="anterior",
             command=self.prev_iteration,
             width=90,
             height=35
         )
         self.prev_btn.pack(side="left", padx=2)
         
+        # boton ir al siguiente
         self.next_btn = ModernButton(
             nav_frame,
-            text="Siguiente ▶️",
+            text="siguiente",
             command=self.next_iteration,
             width=90,
             height=35
         )
         self.next_btn.pack(side="left", padx=2)
         
+        # boton ir al ultimo
         self.last_btn = ModernButton(
             nav_frame,
-            text="⏭️ Último",
+            text="ultimo",
             command=self.last_iteration,
             width=90,
             height=35
         )
         self.last_btn.pack(side="left", padx=2)
         
-        # Notebook moderno para diferentes vistas
+        # notebook moderno para diferentes vistas
         self.notebook = ctk.CTkTabview(self, width=1000)
         self.notebook.pack(fill="both", expand=True, padx=20, pady=10)
         
-        # Crear tabs
-        self.notebook.add("📊 Vista Iterativa")
-        self.notebook.add("📈 Convergencia")
-        self.notebook.add("✅ Resultado Final")
+        # crear tabs principales
+        self.notebook.add("vista iterativa")
+        self.notebook.add("convergencia")
+        self.notebook.add("resultado final")
         
         self.setup_iterations_tab()
         self.setup_convergence_tab()
