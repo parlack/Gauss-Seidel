@@ -252,12 +252,12 @@ class GaussSeidelApp(ctk.CTk):
         ).pack(pady=(8, 4))
         
         # campo para ingresar tolerancia
-        self.tolerance_var = tk.StringVar(value="1e-6")
+        self.tolerance_var = tk.StringVar(value="0.000001")
         self.tolerance_entry = ModernEntry(
             tol_frame,
             textvariable=self.tolerance_var,
             width=140,
-            placeholder="1e-6"
+            placeholder="0.000001"
         )
         self.tolerance_entry.pack(pady=(0, 8))
         
@@ -282,26 +282,6 @@ class GaussSeidelApp(ctk.CTk):
         )
         self.max_iter_entry.pack(pady=(0, 8))
         
-        # configuracion de vector inicial (opcional)
-        initial_frame = ctk.CTkFrame(solver_controls_frame)
-        initial_frame.pack(fill="x", padx=10, pady=8)
-        
-        # etiqueta para vector inicial
-        ctk.CTkLabel(
-            initial_frame,
-            text="vector inicial:",
-            font=ctk.CTkFont(size=12, weight="bold")
-        ).pack(pady=(8, 4))
-        
-        # checkbox para usar vector cero como inicial
-        self.use_zero_initial = tk.BooleanVar(value=True)
-        initial_checkbox = ctk.CTkCheckBox(
-            initial_frame,
-            text="usar vector cero",
-            variable=self.use_zero_initial,
-            font=ctk.CTkFont(size=11)
-        )
-        initial_checkbox.pack(pady=(0, 8))
         
         # barra de estado para mostrar mensajes al usuario
         self.status_label = ctk.CTkLabel(

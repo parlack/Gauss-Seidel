@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 class GaussSeidelSolver:
     """
@@ -20,14 +20,13 @@ class GaussSeidelSolver:
         # tolerancia para determinar convergencia
         self.tolerance = 0.000001
     
-    def solve(self, A: np.ndarray, b: np.ndarray, x0: Optional[np.ndarray] = None) -> Dict:
+    def solve(self, A: np.ndarray, b: np.ndarray) -> Dict:
         """
         resuelve el sistema ax = b usando gauss-seidel
         
         args:
             a: matriz de coeficientes (n x n)
             b: vector de terminos independientes (n x 1)
-            x0: vector inicial (opcional, por defecto vector de ceros)
         
         returns:
             dict con solucion, iteraciones, convergencia y errores
@@ -39,13 +38,8 @@ class GaussSeidelSolver:
         if not self._is_diagonally_dominant(A):
             print("advertencia: la matriz no es diagonalmente dominante. la convergencia no esta garantizada.")
         
-        # inicializar vector solucion
-        if x0 is None:
-            # usar vector de ceros como punto inicial
-            x = np.zeros(n)
-        else:
-            # usar vector inicial proporcionado
-            x = x0.copy()
+        # inicializar vector solucion con vector de ceros
+        x = np.zeros(n)
         
         # limpiar historiales de iteraciones anteriores
         self.iteration_history = []
