@@ -2,32 +2,34 @@
 
 Una aplicación Python con interfaz gráfica moderna para resolver sistemas de ecuaciones lineales usando el método iterativo de Gauss-Seidel, con visualización paso a paso del proceso de solución.
 
+**Desarrollado por:**
+- Andrés Monsivais Salazar
+- Luis Andrés Salinas Lozano
+
 ## ✨ Características
 
-- **🎨 Interfaz Visual Moderna**: Diseño limpio y moderno usando CustomTkinter
-- **🔬 Visualización Paso a Paso Mejorada**: 
-  - Cards visuales para cada iteración (sin formato de terminal)
-  - Barra de progreso animada
-  - Comparación visual entre iteraciones
-  - Navegación avanzada (Primera/Anterior/Siguiente/Última)
-- **📊 Dashboard Interactivo**: 
-  - Métricas en tiempo real
-  - Gráficos de convergencia mejorados
-  - Indicadores visuales de cambio
-- **🎯 Sistemas Dinámicos y Responsivos**: 
-  - Resuelve sistemas de 2×2 hasta 10×10 ecuaciones
-  - **Layout de 2 columnas optimizado**: Términos independientes + Configuración del solver
-  - Auto-redimensionado inteligente de ventana según tamaño del sistema
-  - Scroll automático para sistemas grandes
-  - Campos responsivos que se ajustan al tamaño disponible
-- **📈 Análisis de Convergencia**: Visualiza cómo converge la solución con gráficos profesionales
+- **🎨 Interfaz Visual Moderna**: Diseño limpio usando CustomTkinter
+- **🔬 Visualización Paso a Paso**: 
+  - Cards visuales para cada iteración
+  - Navegación entre iteraciones (Primera/Anterior/Siguiente/Última)
+  - Comparación visual entre iteraciones consecutivas
+  - Barra de progreso del proceso
+- **📊 Análisis Detallado**: 
+  - Vista iterativa con cálculos detallados
+  - Resultado final con verificación por sustitución
+  - Métricas del proceso (iteraciones, error final)
+- **🎯 Sistemas Dinámicos**: 
+  - Resuelve sistemas de 2×2 hasta 50×50 ecuaciones
+  - Layout responsive que se adapta al tamaño del sistema
+  - Auto-redimensionado inteligente de ventana
 - **✅ Validación Inteligente**: 
-  - Verifica la validez de los datos de entrada
-  - **🔧 Auto-optimización de matrices**: Detecta automáticamente si se puede hacer diagonalmente dominante
-  - **↕️ Reordenamiento inteligente**: Intercambia filas automáticamente para garantizar convergencia
-  - **⚠️ Advertencias claras**: Informa cuando no es posible optimizar el sistema
-- **⚙️ Configuración Flexible**: Ajusta tolerancia y máximo de iteraciones
-- **🏆 Resultado Visual**: Solución mostrada en tarjetas coloridas organizadas
+  - Verifica automáticamente la validez de los datos
+  - **🔧 Auto-optimización**: Detecta y reordena automáticamente matrices para hacerlas diagonalmente dominantes
+  - **⚠️ Advertencias claras**: Informa cuando la convergencia no está garantizada
+- **⚙️ Configuración Flexible**: 
+  - Tolerancia ajustable (default: 0.000001)
+  - Máximo de iteraciones configurable (default: 100)
+- **🏆 Resultado Visual**: Solución mostrada en tarjetas organizadas con verificación
 
 ## 📋 Requisitos
 
@@ -40,7 +42,7 @@ Una aplicación Python con interfaz gráfica moderna para resolver sistemas de e
    ```bash
    # Si tienes git:
    git clone [URL_DEL_REPOSITORIO]
-   cd gauss-seidel
+   cd Gauss-Seidel
    ```
 
 2. **Instalar dependencias**
@@ -52,54 +54,40 @@ Una aplicación Python con interfaz gráfica moderna para resolver sistemas de e
    ```bash
    python main.py
    ```
-   
-   O ejecuta la **demostración mejorada** con instrucciones:
-   ```bash
-   python demo.py
-   ```
-   
-   Para **probar sistemas grandes** y responsividad:
-   ```bash
-   python test_large_systems.py
-   ```
-   
-   Para **demostrar la dominancia diagonal automática**:
-   ```bash
-   python demo_diagonal_dominance.py
-   ```
 
 ## 🎯 Cómo Usar
 
-### 1. Entrada de Datos
-- **Tamaño del Sistema**: Selecciona entre 2×2 y 10×10 ecuaciones
-- **Matriz de Coeficientes**: Ingresa los coeficientes del sistema Ax = b
-- **Términos Independientes**: Ingresa el vector b
-- **Configuración**: Ajusta tolerancia y máximo de iteraciones
+### 1. Configuración del Sistema
+- **Tamaño del Sistema**: Selecciona entre 2×2 y 50×50 ecuaciones usando el campo numérico y presiona ✓
+- **Auto-redimensionado**: La ventana se ajusta automáticamente según el tamaño del sistema
 
-### 2. Botones de Control
+### 2. Entrada de Datos
+- **Matriz de Coeficientes**: Ingresa los coeficientes del sistema Ax = b en la grilla izquierda
+- **Términos Independientes**: Ingresa el vector b en la columna derecha
+- **Configuración del Solver**: 
+  - Ajusta la tolerancia (precisión deseada)
+  - Configura el máximo de iteraciones
+
+### 3. Botones de Control
 - **🧹 Limpiar Todo**: Borra todas las entradas
-- **📋 Ejemplo**: Carga un sistema de ejemplo
-- **✅ Validar**: Verifica que los datos sean correctos
-- **🚀 RESOLVER SISTEMA**: Inicia el proceso de solución
+- **📋 Ejemplo**: Carga un sistema de ejemplo (con opción de reordenamiento automático)
+- **✅ Validar**: Verifica que los datos sean correctos y optimiza la matriz automáticamente
+- **🚀 Resolver Sistema**: Inicia el proceso de solución
 
-### 3. Visualización de Resultados (🆕 MEJORADO)
+### 4. Visualización de Resultados
 - **📊 Vista Iterativa**: 
-  - Cards visuales para cada iteración
+  - Cards visuales modernas para cada iteración
+  - Cálculos detallados paso a paso
   - Comparación con iteración anterior
-  - Cálculos mostrados de forma gráfica
   - Navegación fluida entre pasos
-- **📈 Convergencia**: 
-  - Gráfico profesional de convergencia
-  - Métricas en tiempo real
-  - Indicadores de progreso
-- **✅ Resultado Final**: 
-  - Solución en tarjetas organizadas
-  - Estadísticas visuales del proceso
-  - Estado de convergencia claro
+- **🎯 Resultado Final**: 
+  - Solución en formato visual organizado
+  - Verificación por sustitución en el sistema original
+  - Estadísticas del proceso de convergencia
 
 ## 🔬 Método de Gauss-Seidel
 
-El método de Gauss-Seidel es un algoritmo iterativo para resolver sistemas de ecuaciones lineales de la forma Ax = b. La fórmula iterativa es:
+El método de Gauss-Seidel es un algoritmo iterativo para resolver sistemas de ecuaciones lineales de la forma **Ax = b**. La fórmula iterativa es:
 
 ```
 x_i^(k+1) = (b_i - Σ(a_ij * x_j^(k+1)) - Σ(a_ij * x_j^(k))) / a_ii
@@ -107,7 +95,7 @@ x_i^(k+1) = (b_i - Σ(a_ij * x_j^(k+1)) - Σ(a_ij * x_j^(k))) / a_ii
 
 ### Convergencia y Auto-Optimización 🔧
 
-#### ✅ Dominancia Diagonal Automática (NUEVA FUNCIONALIDAD)
+#### ✅ Dominancia Diagonal Automática
 - **Detección automática**: La aplicación detecta si la matriz puede hacerse diagonalmente dominante
 - **Reordenamiento inteligente**: Intercambia filas automáticamente para optimizar la convergencia
 - **Garantía de convergencia**: Si se logra hacer diagonalmente dominante, la convergencia está asegurada
@@ -124,51 +112,45 @@ x_i^(k+1) = (b_i - Σ(a_ij * x_j^(k+1)) - Σ(a_ij * x_j^(k))) / a_ii
 ## 📁 Estructura del Proyecto
 
 ```
-gauss-seidel/
-├── main.py                 # Archivo principal para ejecutar
+Gauss-Seidel/
+├── main.py                 # Archivo principal con verificación de dependencias
 ├── requirements.txt        # Dependencias de Python
 ├── README.md              # Este archivo
 ├── gui/
-│   ├── __init__.py
-│   ├── main_window.py     # Ventana principal
-│   └── components.py      # Componentes de la interfaz
+│   ├── main_window.py     # Ventana principal de la aplicación
+│   └── components.py      # Componentes personalizados de la interfaz
 ├── solver/
-│   ├── __init__.py
-│   └── gauss_seidel.py    # Algoritmo de Gauss-Seidel
+│   └── gauss_seidel.py    # Algoritmo de Gauss-Seidel con visualización
 └── utils/
-    ├── __init__.py
-    └── validators.py      # Validación de entrada
+    └── validators.py      # Validación y optimización de matrices
 ```
 
 ## 🛠️ Dependencias
 
-- **customtkinter**: Interfaz gráfica moderna
-- **numpy**: Cálculos matemáticos y arrays
-- **matplotlib**: Gráficos y visualizaciones
-- **tkinter**: Biblioteca GUI base (incluida en Python)
+- **customtkinter**: Interfaz gráfica moderna y componentes visuales
+- **numpy**: Cálculos matemáticos eficientes y manipulación de matrices
+- **tkinter**: Biblioteca GUI base (incluida en Python estándar)
 
 ## 💡 Ejemplos de Uso
 
-### Sistema 3×3 (Diagonalmente Dominante)
+### Sistema 3×3 Diagonalmente Dominante
 ```
 10x₁ -  1x₂ + 2x₃ =  6
 -1x₁ + 11x₂ - 1x₃ = 25
  2x₁ -  1x₂ +10x₃ = -11
 ```
+**Solución**: x₁ = 1, x₂ = 2, x₃ = -1
 
-Solución: x₁ = 1, x₂ = 2, x₃ = -1
-
-### Sistema 2×2
+### Sistema 2×2 Simple
 ```
 4x₁ + 1x₂ =  1
 2x₁ + 3x₂ = 11
 ```
+**Solución**: x₁ = -1, x₂ = 5
 
-Solución: x₁ = -1, x₂ = 5
+### 🔧 Ejemplo de Auto-Optimización
 
-### 🔧 Ejemplo de Auto-Optimización (NUEVO)
-
-#### Sistema que requiere reordenamiento:
+**Sistema que requiere reordenamiento:**
 ```
 Matriz Original:          Matriz Optimizada:
 [1   8   2 ] [11]         [15  -1   2 ] [16]  ← Fila 3 → Fila 1
@@ -185,99 +167,74 @@ Matriz Original:          Matriz Optimizada:
 4. ✅ Se muestra el resultado: "Matriz hecha diagonalmente dominante intercambiando 2 fila(s)"
 5. 🚀 El sistema ahora converge garantizadamente
 
-## 🎨 Mejoras Visuales (NUEVA VERSIÓN)
+## 🎨 Funcionalidades de la Interfaz
 
-### 🔄 Visualización de Iteraciones
-- **Sin Formato de Terminal**: Eliminado completamente el texto plano
-- **Cards Interactivas**: Cada iteración se muestra en tarjetas visuales modernas
-- **Comparación Visual**: Ver cambios entre iteraciones con iconos y colores
-- **Fórmulas Amigables**: Cálculos mostrados de forma fácil de entender
+### 🔄 Navegación Avanzada
+- **Botones de navegación**: Primera, Anterior, Siguiente, Última iteración
+- **Barra de progreso**: Visualización del avance del algoritmo
+- **Información en tiempo real**: Iteración actual, error, estado de convergencia
 
-### 📊 Dashboard de Progreso
-- **Barra de Progreso**: Visualiza el avance del algoritmo
-- **Métricas en Vivo**: Error actual, tasa de convergencia, iteraciones
-- **Navegación Avanzada**: Botones Primera/Anterior/Siguiente/Última
-- **Indicadores de Estado**: Colores y iconos para mostrar convergencia
+### 📊 Visualización Profesional
+- **Cards de iteraciones**: Cada paso mostrado en tarjetas visuales modernas
+- **Cálculos detallados**: Fórmulas y sustituciones paso a paso
+- **Comparación visual**: Indicadores de cambio entre iteraciones
+- **Resultado organizado**: Solución final en formato grid visual
 
-### 🎯 Resultado Profesional
-- **Solución en Grid**: Variables organizadas en tarjetas coloridas
-- **Estadísticas Visuales**: Métricas del proceso en formato gráfico
-- **Estado Claro**: Indicadores visuales de éxito/advertencia
+### ⚙️ Configuración Inteligente
+- **Sistemas adaptativos**: Layout responsive para cualquier tamaño de sistema
+- **Redimensionado automático**: La ventana se ajusta según el tamaño del problema
+- **Validación en tiempo real**: Retroalimentación inmediata sobre la entrada de datos
 
 ## ⚡ Características Técnicas
 
-- **Validación en Tiempo Real**: Verifica entrada mientras escribes
-- **Manejo de Errores**: Mensajes claros para problemas comunes
-- **Interfaz Responsive**: Se adapta a diferentes tamaños de ventana
-- **Navegación Intuitiva**: Botones para navegar entre iteraciones
-- **Temas Personalizables**: Interfaz moderna y limpia
-- **Renderizado Optimizado**: Actualización eficiente de componentes visuales
+- **Manejo robusto de errores**: Mensajes claros para problemas comunes
+- **Validación exhaustiva**: Verifica matrices, vectores y configuraciones
+- **Algoritmo optimizado**: Implementación eficiente del método iterativo
+- **Interfaz responsive**: Se adapta a diferentes tamaños de sistema
+- **Memoria eficiente**: Manejo optimizado de sistemas grandes
 
 ## 🐛 Solución de Problemas
 
 ### La aplicación no inicia
-- Verifica que Python 3.7+ esté instalado
+- Verifica que Python 3.7+ esté instalado: `python --version`
 - Instala las dependencias: `pip install -r requirements.txt`
+- Si faltan dependencias, aparecerá un mensaje de error explicativo
 
 ### El método no converge
-- Verifica que la matriz sea diagonalmente dominante
-- Aumenta el número máximo de iteraciones
-- Reduce la tolerancia si es necesario
+- La aplicación automáticamente intenta optimizar la matriz
+- Si no es posible, aparecerá una advertencia clara
+- Puedes:
+  - Aumentar el número máximo de iteraciones
+  - Reducir la tolerancia si es necesario
+  - Verificar que los datos del sistema sean correctos
 
 ### Errores de entrada
-- Usa números decimales (ej: 1.5, -2.0)
-- No dejes celdas vacías
-- Verifica que no haya ceros en la diagonal principal
+- **Números**: Usa formato decimal (ej: 1.5, -2.0, 3)
+- **Celdas vacías**: No dejes campos sin completar
+- **Diagonal principal**: No puede contener ceros
+- La validación automática te guiará en caso de errores
 
-## 🧪 Probando las Mejoras Visuales
+### Sistemas grandes son lentos
+- Sistemas > 15×15 pueden tardar más en procesar
+- La aplicación automáticamente maximiza la ventana para sistemas grandes
+- Considera reducir la tolerancia para convergencia más rápida
 
-Para experimentar completamente las **nuevas características visuales**:
+## 💻 Prueba la Aplicación
 
-1. **Ejecuta la demo**:
-   ```bash
-   python demo.py
-   ```
+1. **Carga un ejemplo básico**:
+   - Presiona "📋 Ejemplo"
+   - Elige "❌ NO" para un sistema ya optimizado
+   - Presiona "🚀 Resolver Sistema"
 
-2. **Carga el ejemplo recomendado** (3x3):
-   - Usa el botón "📋 Ejemplo" en la aplicación
-   - O ingresa manualmente:
-     - Matriz A: `10, -1, 2` / `-1, 11, -1` / `2, -1, 10`
-     - Vector b: `6, 25, -11`
+2. **Experimenta con la optimización**:
+   - Presiona "📋 Ejemplo"
+   - Elige "✅ SÍ" para un sistema que necesita reordenamiento
+   - Observa cómo se optimiza automáticamente
 
-3. **Resuelve y explora**:
-   - Presiona "🚀 RESOLVER SISTEMA"
-   - Ve a "📊 Vista Iterativa" para ver las cards visuales
-   - Navega con los botones mejorados
-   - Revisa "📈 Convergencia" para métricas en tiempo real
-   - Checa "✅ Resultado Final" para la solución visual
-
-4. **Compara iteraciones**:
-   - Usa los botones de navegación avanzados
-   - Observa los indicadores de cambio con colores
-   - Ve la barra de progreso animada
-
-## 🔧 Probando la Auto-Optimización (NUEVO)
-
-Para experimentar la **nueva funcionalidad de dominancia diagonal**:
-
-1. **Ejecuta la demo específica**:
-   ```bash
-   python demo_diagonal_dominance.py
-   ```
-
-2. **Prueba los ejemplos interactivos**:
-   - **Ejemplo 1**: Sistema que SE PUEDE optimizar
-   - **Ejemplo 2**: Sistema que NO se puede optimizar
-   - **Ejemplo 3**: Sistema YA optimizado
-
-3. **Observa el comportamiento automático**:
-   - Al presionar "✅ Validar" verás la optimización en acción
-   - Los intercambios de filas se muestran claramente
-   - Se actualiza la matriz en tiempo real
-
-4. **Prueba desde la app principal**:
-   - Usa "📋 Ejemplo" y elige "SÍ" para sistemas que requieren reordenamiento
-   - Observa cómo se optimiza automáticamente al resolver
+3. **Explora la visualización**:
+   - Ve a "Proceso de Solución" después de resolver
+   - Navega por las iteraciones usando los botones
+   - Revisa la verificación por sustitución en "Resultado Final"
 
 ## 🤝 Contribuciones
 
@@ -285,11 +242,12 @@ Este proyecto fue desarrollado como una herramienta educativa para visualizar el
 
 ## 📞 Soporte
 
-Si encuentras algún problema o tienes sugerencias:
-1. Verifica la sección de solución de problemas
-2. Asegúrate de que todas las dependencias estén instaladas
-3. Revisa que los datos de entrada sean válidos
+Si encuentras algún problema:
+1. Verifica que todas las dependencias estén instaladas correctamente
+2. Asegúrate de que los datos de entrada sean válidos (números reales, sin celdas vacías)
+3. Revisa que el sistema tenga una solución única
+4. Para sistemas grandes, ten paciencia durante el procesamiento
 
 ---
 
-**¡Disfruta resolviendo sistemas de ecuaciones! 🚀**
+**¡Disfruta resolviendo sistemas de ecuaciones lineales de manera visual e interactiva! 🚀**
