@@ -1,4 +1,4 @@
-#Andres Monsivais Salazar4
+#Andres Monsivais Salazar
 #Luis Andres Salinas Lozano
 
 import sys
