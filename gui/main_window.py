@@ -3,72 +3,73 @@ import tkinter as tk
 from tkinter import messagebox
 
 from .components import (
-    ModernButton, ModernEntry, MatrixInputGrid, 
+    ModernButton, ModernEntry, MatrixInputGrid,
     VectorInputColumn, VisualizationPanel
 )
 from solver.gauss_seidel import GaussSeidelSolver
 from utils.validators import EquationValidator
 
+
 class GaussSeidelApp(ctk.CTk):
     """
     aplicacion principal para resolver sistemas con gauss-seidel
-    
+
     interfaz grafica principal que integra todos los componentes
     para resolver sistemas de ecuaciones lineales usando el metodo
     iterativo de gauss-seidel con visualizacion paso a paso
     """
-    
+
     def __init__(self):
         super().__init__()
-        
+
         # configuracion de la ventana principal
         self.title("resolver sistemas de ecuaciones - metodo de gauss-seidel")
         self.geometry("1280x720")
         self.minsize(1024, 500)
-        
+
         # variables de estado de la aplicacion
         self.current_size = 3  # tamano actual del sistema
         self.solver = GaussSeidelSolver()  # instancia del solver
         # estado: ultima solucion calculada (no se usa)
         # eliminado para simplificar
-        
+
         # configurar tema visual
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
-        
+
         # configurar interfaz de usuario
         self.setup_ui()
         # centrar ventana en pantalla
         self.center_window()
-    
+
     def setup_ui(self):
         """configura la interfaz de usuario principal"""
-        
+
         # frame principal que contiene todo
         main_frame = ctk.CTkFrame(self, corner_radius=0)
         main_frame.pack(fill="both", expand=True)
-        
+
         # crear header con titulo y informacion
         self.create_header(main_frame)
-        
+
         # frame de contenido principal
         content_frame = ctk.CTkFrame(main_frame)
         content_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
+
         # crear notebook principal con pestanas
         self.main_notebook = ctk.CTkTabview(content_frame)
         self.main_notebook.pack(fill="both", expand=True, padx=10, pady=10)
-        
+
         # configurar pestanas principales
         self.setup_input_tab()
         self.setup_solution_tab()
-    
+
     def create_header(self, parent):
         """crea el header de la aplicacion con titulo e informacion"""
         header_frame = ctk.CTkFrame(parent, height=100, corner_radius=0)
         header_frame.pack(fill="x", padx=0, pady=0)
         header_frame.pack_propagate(False)
-        
+
         # titulo principal de la aplicacion
         title_label = ctk.CTkLabel(
             header_frame,
@@ -77,7 +78,7 @@ class GaussSeidelApp(ctk.CTk):
             text_color=("gray10", "gray90")
         )
         title_label.pack(side="left", padx=30, pady=25)
-        
+
         # subtitulo explicativo
         subtitle_label = ctk.CTkLabel(
             header_frame,
@@ -86,11 +87,11 @@ class GaussSeidelApp(ctk.CTk):
             text_color=("gray50", "gray50")
         )
         subtitle_label.pack(side="left", padx=(0, 30), pady=(45, 5))
-        
+
         # informacion del sistema actual
         info_frame = ctk.CTkFrame(header_frame)
         info_frame.pack(side="right", padx=30, pady=20)
-        
+
         # etiqueta que muestra el tamano actual del sistema
         self.system_info_label = ctk.CTkLabel(
             info_frame,
@@ -98,26 +99,26 @@ class GaussSeidelApp(ctk.CTk):
             font=ctk.CTkFont(size=16, weight="bold")
         )
         self.system_info_label.pack(padx=15, pady=10)
-    
+
     def setup_input_tab(self):
         """configura la pestana de entrada de datos"""
         input_tab = self.main_notebook.add("entrada de datos")
-        
+
         # frame de controles superiores
         controls_frame = ctk.CTkFrame(input_tab)
         controls_frame.pack(fill="x", padx=10, pady=10)
-        
+
         # selector de tamano del sistema
         size_frame = ctk.CTkFrame(controls_frame)
         size_frame.pack(side="left", padx=10, pady=10)
-        
+
         # etiqueta para selector de tamano
         ctk.CTkLabel(
             size_frame,
             text="tamano del sistema:",
             font=ctk.CTkFont(size=14, weight="bold")
         ).pack(side="left", padx=10, pady=10)
-        
+
         # campo de entrada para tamano del sistema
         self.size_var = tk.StringVar(value=str(self.current_size))
         self.size_entry = ModernEntry(
@@ -128,10 +129,10 @@ class GaussSeidelApp(ctk.CTk):
             font=ctk.CTkFont(size=12, weight="bold")
         )
         self.size_entry.pack(side="left", padx=5, pady=10)
-        
+
         # permitir presionar enter para aceptar
         self.size_entry.bind('<Return>', lambda event: self.accept_size_change())
-        
+
         # boton de aceptar tamano con icono de palomita
         self.accept_size_btn = ModernButton(
             size_frame,
@@ -143,11 +144,11 @@ class GaussSeidelApp(ctk.CTk):
             font=ctk.CTkFont(size=16, weight="bold")
         )
         self.accept_size_btn.pack(side="left", padx=3, pady=10)
-        
+
         # botones de control
         buttons_frame = ctk.CTkFrame(controls_frame)
         buttons_frame.pack(side="right", padx=10, pady=10)
-        
+
         # boton para limpiar todo
         ModernButton(
             buttons_frame,
@@ -156,7 +157,7 @@ class GaussSeidelApp(ctk.CTk):
             fg_color="gray50",
             width=120
         ).pack(side="left", padx=5, pady=5)
-        
+
 
         # boton principal de resolver - en la parte inferior del frame derecho
         self.solve_button = ModernButton(
@@ -168,7 +169,7 @@ class GaussSeidelApp(ctk.CTk):
             fg_color="#1f538d"
         )
         self.solve_button.pack(fill="x", padx=10, pady=(10, 15), side="bottom")
-        
+
 
         # boton para cargar ejemplo
         ModernButton(
@@ -178,7 +179,7 @@ class GaussSeidelApp(ctk.CTk):
             fg_color="orange",
             width=120
         ).pack(side="left", padx=5, pady=5)
-        
+
         # boton para validar entrada
         ModernButton(
             buttons_frame,
@@ -187,15 +188,15 @@ class GaussSeidelApp(ctk.CTk):
             fg_color="green",
             width=120
         ).pack(side="left", padx=5, pady=5)
-        
+
         # frame principal para matriz y vector
         input_main_frame = ctk.CTkFrame(input_tab)
         input_main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-        
+
         # frame izquierdo para la matriz de coeficientes
         left_frame = ctk.CTkFrame(input_main_frame)
         left_frame.pack(side="left", fill="both", expand=True, padx=(10, 5), pady=10)
-        
+
         # widget para ingresar matriz de coeficientes
         self.matrix_input = MatrixInputGrid(
             left_frame,
@@ -203,19 +204,19 @@ class GaussSeidelApp(ctk.CTk):
             on_change=self.on_input_change
         )
         self.matrix_input.pack(fill="both", expand=True)
-        
+
         # frame derecho con dos columnas para mejor uso del espacio
         right_frame = ctk.CTkFrame(input_main_frame)
         right_frame.pack(side="right", fill="both", padx=(5, 10), pady=10)
-        
+
         # contenedor principal para las dos columnas
         columns_container = ctk.CTkFrame(right_frame)
         columns_container.pack(fill="both", expand=True, padx=10, pady=10)
-        
+
         # columna izquierda: vector de terminos independientes
         vector_column = ctk.CTkFrame(columns_container)
         vector_column.pack(side="left", fill="both", expand=True, padx=(0, 5))
-        
+
         # widget para ingresar vector de terminos independientes
         self.vector_input = VectorInputColumn(
             vector_column,
@@ -223,11 +224,11 @@ class GaussSeidelApp(ctk.CTk):
             on_change=self.on_input_change
         )
         self.vector_input.pack(fill="both", expand=True)
-        
+
         # columna derecha: configuracion del solver
         config_column = ctk.CTkFrame(columns_container)
         config_column.pack(side="right", fill="both", expand=True, padx=(5, 0))
-        
+
         # titulo de configuracion
         config_title = ctk.CTkLabel(
             config_column,
@@ -235,22 +236,22 @@ class GaussSeidelApp(ctk.CTk):
             font=ctk.CTkFont(size=14, weight="bold")
         )
         config_title.pack(pady=(15, 20))
-        
+
         # frame contenedor para los controles del solver
         solver_controls_frame = ctk.CTkFrame(config_column)
         solver_controls_frame.pack(fill="x", padx=10, pady=5)
-        
+
         # configuracion de tolerancia
         tol_frame = ctk.CTkFrame(solver_controls_frame)
         tol_frame.pack(fill="x", padx=10, pady=8)
-        
+
         # etiqueta para tolerancia
         ctk.CTkLabel(
             tol_frame,
             text="tolerancia:",
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(pady=(8, 4))
-        
+
         # campo para ingresar tolerancia
         self.tolerance_var = tk.StringVar(value="0.000001")
         self.tolerance_entry = ModernEntry(
@@ -260,18 +261,18 @@ class GaussSeidelApp(ctk.CTk):
             placeholder="0.000001"
         )
         self.tolerance_entry.pack(pady=(0, 8))
-        
+
         # configuracion de maximo de iteraciones
         max_iter_frame = ctk.CTkFrame(solver_controls_frame)
         max_iter_frame.pack(fill="x", padx=10, pady=8)
-        
+
         # etiqueta para maximo de iteraciones
         ctk.CTkLabel(
             max_iter_frame,
             text="max. iteraciones:",
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(pady=(8, 4))
-        
+
         # campo para ingresar maximo de iteraciones
         self.max_iter_var = tk.StringVar(value="100")
         self.max_iter_entry = ModernEntry(
@@ -281,8 +282,8 @@ class GaussSeidelApp(ctk.CTk):
             placeholder="100"
         )
         self.max_iter_entry.pack(pady=(0, 8))
-        
-        
+
+
         # barra de estado para mostrar mensajes al usuario
         self.status_label = ctk.CTkLabel(
             input_tab,
@@ -291,15 +292,15 @@ class GaussSeidelApp(ctk.CTk):
             text_color="gray60"
         )
         self.status_label.pack(side="bottom", pady=5)
-    
+
     def setup_solution_tab(self):
         """configura la pestana de solucion"""
         solution_tab = self.main_notebook.add("proceso de solucion")
-        
+
         # panel principal de visualizacion del proceso
         self.visualization_panel = VisualizationPanel(solution_tab)
         self.visualization_panel.pack(fill="both", expand=True, padx=10, pady=10)
-    
+
     def center_window(self):
         """centra la ventana en la pantalla"""
         # actualizar geometria para obtener tamano real
@@ -312,7 +313,7 @@ class GaussSeidelApp(ctk.CTk):
         y = (self.winfo_screenheight() // 2) - (height // 2)
         # aplicar geometria centrada
         self.geometry(f'{width}x{height}+{x}+{y}')
-    
+
     def accept_size_change(self):
         """acepta y valida el cambio de tamano del sistema"""
         try:
@@ -367,15 +368,14 @@ class GaussSeidelApp(ctk.CTk):
             self.update_status(error_msg, is_error=True)
             messagebox.showerror("error", error_msg)
             self.size_var.set(str(self.current_size))
-    
-    
-    
+
+
     def on_input_change(self):
         """callback cuando cambian los datos de entrada"""
         # aqui se podria implementar validacion en tiempo real
         # por ahora solo es un placeholder para futuras funcionalidades
         pass
-    
+
     def clear_all_inputs(self):
         """limpia todas las entradas de la interfaz"""
         # limpiar matriz de coeficientes
@@ -386,11 +386,11 @@ class GaussSeidelApp(ctk.CTk):
         self.visualization_panel.clear()
         # actualizar mensaje de estado
         self.update_status("todas las entradas han sido limpiadas")
-    
+
     def load_example(self):
         """Carga un ejemplo predefinido (incluyendo casos que requieren reordenamiento)"""
         import random
-        
+
         # Ofrecer diferentes tipos de ejemplos
         example_type = messagebox.askyesno(
             "Tipo de Ejemplo",
@@ -398,7 +398,7 @@ class GaussSeidelApp(ctk.CTk):
             "✅ SÍ: Ejemplo que necesita reordenamiento\n"
             "❌ NO: Ejemplo ya diagonalmente dominante"
         )
-        
+
         if example_type:  # Ejemplo que necesita reordenamiento
             if self.current_size == 3:
                 # Sistema que NO es diagonalmente dominante inicialmente
@@ -431,13 +431,14 @@ class GaussSeidelApp(ctk.CTk):
                             row.append(random.randint(2, 8))
                     matrix_values.append(row)
                     vector_values.append(random.randint(1, 20))
-                
+
                 # Asegurar que al menos una fila pueda ser dominante
                 strong_row_idx = random.randint(0, self.current_size - 1)
                 matrix_values[strong_row_idx][strong_row_idx] = sum(abs(x) for x in matrix_values[strong_row_idx]) + 2
-                
-                example_msg = f"🔧 Ejemplo {self.current_size}×{self.current_size} generado: Sistema que puede requerir reordenamiento"
-        
+
+                example_msg = (f"🔧 Ejemplo {self.current_size}×{self.current_size} generado: "
+                               f"Sistema que puede requerir reordenamiento")
+
         else:  # Ejemplo ya diagonalmente dominante
             if self.current_size == 3:
                 # Sistema ya diagonalmente dominante
@@ -468,55 +469,55 @@ class GaussSeidelApp(ctk.CTk):
                     matrix_values.append(row)
                     vector_values.append(i + 1)
                 example_msg = f"✅ Ejemplo {self.current_size}×{self.current_size} cargado: Sistema diagonalmente dominante"
-        
+
         self.matrix_input.set_values(matrix_values)
         self.vector_input.set_values(vector_values)
         self.update_status(example_msg)
-    
+
     def validate_input(self):
         """valida la entrada actual del usuario"""
         try:
             # obtener valores ingresados por el usuario
             matrix_data = self.matrix_input.get_values()
             vector_data = self.vector_input.get_values()
-            
+
             # validar matriz de coeficientes
             is_valid_matrix, matrix_error, matrix_np = EquationValidator.validate_matrix(matrix_data)
             if not is_valid_matrix:
                 self.update_status(f"error en matriz: {matrix_error}", is_error=True)
                 messagebox.showerror("error de validacion", f"matriz: {matrix_error}")
                 return False
-            
+
             # validar vector de terminos independientes
             is_valid_vector, vector_error, vector_np = EquationValidator.validate_vector(vector_data)
             if not is_valid_vector:
                 self.update_status(f"error en vector: {vector_error}", is_error=True)
                 messagebox.showerror("error de validacion", f"vector: {vector_error}")
                 return False
-            
+
             # intentar hacer la matriz diagonalmente dominante
             dominance_result = EquationValidator.make_diagonally_dominant(matrix_np, vector_np)
-            
+
             if dominance_result['success']:
                 # actualizar las matrices con la version optimizada
                 matrix_np = dominance_result['matrix']
                 vector_np = dominance_result['vector']
-                
+
                 # actualizar la interfaz con los nuevos valores
                 self.matrix_input.set_values(matrix_np.tolist())
                 self.vector_input.set_values(vector_np.tolist())
-                
+
                 # informar al usuario sobre los cambios
                 swaps_count = len(dominance_result['swaps_made'])
                 if swaps_count > 0:
                     success_msg = f"{dominance_result['message']}"
                     self.update_status(success_msg)
-                    
+
                     # mostrar detalles de los intercambios realizados
                     swaps_details = "intercambios realizados:\n"
                     for swap in dominance_result['swaps_made']:
                         swaps_details += f"fila {swap[0]+1} <-> fila {swap[1]+1}\n"
-                    
+
                     messagebox.showinfo(
                         "matriz optimizada",
                         f"sistema reordenado automaticamente\n\n"
@@ -540,49 +541,49 @@ class GaussSeidelApp(ctk.CTk):
                 )
                 if not result:
                     return False
-            
+
             self.update_status("validacion exitosa. sistema listo para resolver")
             return True
-            
+
         except Exception as e:
             error_msg = f"error inesperado: {str(e)}"
             self.update_status(error_msg, is_error=True)
             messagebox.showerror("error", error_msg)
             return False
-    
+
     def solve_system(self):
         """resuelve el sistema de ecuaciones usando gauss-seidel"""
         # validar entrada primero antes de proceder
         if not self.validate_input():
             return
-        
+
         try:
             # obtener valores ingresados por el usuario
             matrix_data = self.matrix_input.get_values()
             vector_data = self.vector_input.get_values()
-            
+
             # convertir a numpy arrays para procesamiento
             _, _, A = EquationValidator.validate_matrix(matrix_data)
             _, _, b = EquationValidator.validate_vector(vector_data)
-            
+
             # intentar optimizacion automatica (sin mostrar mensaje si ya es dominante)
             dominance_result = EquationValidator.make_diagonally_dominant(A, b)
-            
+
             if dominance_result['success'] and len(dominance_result['swaps_made']) > 0:
                 # solo actualizar si se hicieron cambios
                 A = dominance_result['matrix']
                 b = dominance_result['vector']
-                
+
                 # actualizar la interfaz silenciosamente
                 self.matrix_input.set_values(A.tolist())
                 self.vector_input.set_values(b.tolist())
-                
+
                 # mensaje discreto en el status
                 self.update_status(f"sistema optimizado: {dominance_result['message']}")
             elif not dominance_result['success']:
                 # solo mostrar advertencia si no se pudo optimizar y no es dominante
                 self.update_status("sistema sin dominancia diagonal - convergencia no garantizada", is_warning=True)
-            
+
             # configurar parametros del solver
             try:
                 # configurar tolerancia
@@ -592,37 +593,37 @@ class GaussSeidelApp(ctk.CTk):
             except ValueError:
                 messagebox.showerror("error", "valores de configuracion invalidos")
                 return
-            
+
             # iniciar proceso de resolucion
             self.update_status("resolviendo sistema...")
             self.solve_button.configure(text="resolviendo...", state="disabled")
             self.update_idletasks()
-            
+
             # generar pasos detallados del proceso
             steps_data = self.solver.generate_step_by_step(A, b)
-            
+
             # actualizar panel de visualizacion con los resultados
             self.visualization_panel.update_visualization(steps_data)
-            
+
             # cambiar a la pestana de solucion para mostrar resultados
             self.main_notebook.set("proceso de solucion")
-            
+
             # actualizar status basado en el resultado
             result = steps_data[-1]  # ultimo paso contiene el resultado final
             if result['converged']:
                 self.update_status("sistema resuelto con exito")
             else:
                 self.update_status("sistema resuelto (convergencia no alcanzada)", is_warning=True)
-            
+
         except Exception as e:
             error_msg = f"error al resolver: {str(e)}"
             self.update_status(error_msg, is_error=True)
             messagebox.showerror("error de resolucion", error_msg)
-        
+
         finally:
             # restaurar estado del boton principal
             self.solve_button.configure(text="resolver sistema", state="normal")
-    
+
     def update_status(self, message: str, is_error: bool = False, is_warning: bool = False):
         """actualiza el mensaje de estado en la barra inferior"""
         # determinar color segun tipo de mensaje
@@ -632,7 +633,7 @@ class GaussSeidelApp(ctk.CTk):
             color = "orange"
         else:
             color = ("gray60", "gray40")
-        
+
         # actualizar texto y color del label de status
         self.status_label.configure(text=message, text_color=color)
         # forzar actualizacion inmediata de la interfaz
