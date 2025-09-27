@@ -1,1 +1,1 @@
-# GUI package for Biseccion method
+# GUI module for Bisection method

@@ -1,194 +1,231 @@
-# Método de Bisección - Resolver Ecuaciones No Lineales
+# Método de Bisección - Resolución de Ecuaciones No Lineales
 
 ## Descripción
 
-Este proyecto implementa el método numérico de **bisección** para encontrar raíces de ecuaciones no lineales. Incluye una interfaz gráfica moderna y fácil de usar que permite visualizar paso a paso el proceso iterativo del algoritmo.
+Esta aplicación implementa el **método de bisección** para encontrar raíces de ecuaciones no lineales de la forma f(x) = 0. El método utiliza el teorema del valor intermedio para encontrar aproximaciones de las raíces mediante la división sucesiva de intervalos.
 
 ## Características
 
-### 🎯 Funcionalidades Principales
-- **Resolución de ecuaciones no lineales** usando el método de bisección
-- **Interfaz gráfica intuitiva** con pestañas organizadas
-- **Visualización paso a paso** del proceso iterativo
-- **Validación automática** de funciones e intervalos
-- **Navegación interactiva** entre iteraciones
-- **Ejemplos predefinidos** para aprendizaje rápido
+- ✅ **Interfaz gráfica moderna** con CustomTkinter
+- 🔄 **Visualización paso a paso** del proceso iterativo
+- 📊 **Validación automática** de funciones e intervalos
+- 🎯 **Múltiples tipos de funciones** soportadas
+- 📈 **Navegación entre iteraciones** con controles intuitivos
+- 🔍 **Verificación de resultados** con sustitución automática
 
-### 📊 Método de Bisección
-El método de bisección es un algoritmo numérico robusto que:
-- Encuentra raíces de funciones continuas
-- Requiere un intervalo [a,b] donde f(a) × f(b) < 0
-- Divide sucesivamente el intervalo por la mitad
-- Converge siempre (aunque puede ser lento)
-- Es numéricamente estable
+## Funciones Soportadas
 
-### 🔧 Funciones Matemáticas Soportadas
-- **Básicas**: x, +, -, *, /, **
-- **Trigonométricas**: sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
-- **Hiperbólicas**: sinh(x), cosh(x), tanh(x)
-- **Logarítmicas**: log(x), ln(x), log10(x)
-- **Exponenciales**: exp(x), e**x
-- **Otras**: sqrt(x), abs(x), pi, e
+### Operadores Básicos
+- `+`, `-`, `*`, `/` (operaciones aritméticas)
+- `**` o `^` (potenciación)
+- `()` (paréntesis para agrupación)
+
+### Funciones Matemáticas
+- `sin(x)`, `cos(x)`, `tan(x)` (trigonométricas)
+- `exp(x)` (exponencial)
+- `log(x)` (logaritmo natural)
+- `log10(x)` (logaritmo base 10)
+- `sqrt(x)` (raíz cuadrada)
+- `abs(x)` (valor absoluto)
+
+### Constantes
+- `pi` (π = 3.14159...)
+- `e` (e = 2.71828...)
+
+## Ejemplos de Funciones
+
+```python
+# Polinomios
+x**3 - 2*x - 5
+x**2 - 4
+
+# Exponenciales
+exp(-x) - x
+2**x - 3
+
+# Trigonométricas
+cos(x) - x
+sin(x) - 0.5
+
+# Logarítmicas
+log(x) - 1
+log10(x) + 2
+
+# Combinadas
+x**2 + sin(x) - 1
+exp(x) - 2*cos(x)
+```
 
 ## Instalación
 
-### Requisitos del Sistema
-- Python 3.7 o superior
-- Pip (administrador de paquetes de Python)
+### Requisitos
+- Python 3.8 o superior
+- pip (gestor de paquetes de Python)
 
-### Pasos de Instalación
-
-1. **Clonar o descargar el proyecto**
-   ```bash
-   cd Biseccion/
-   ```
-
-2. **Instalar dependencias**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Ejecutar la aplicación**
-   ```bash
-   python main.py
-   ```
-
-## Uso de la Aplicación
-
-### 1. Entrada de Datos
-- **Función Matemática**: Ingresa la función f(x) que quieres resolver
-  - Ejemplo: `x**2 - 4` (encuentra las raíces x = ±2)
-  - Ejemplo: `sin(x)` (encuentra x = 0, π, 2π, etc.)
-  - Ejemplo: `exp(x) - 2` (encuentra x = ln(2))
-
-- **Intervalo [a,b]**: Define el intervalo donde buscar la raíz
-  - Debe cumplir: f(a) × f(b) < 0 (cambio de signo)
-  - Ejemplo: Para x² - 4, usar intervalo [1, 3] para encontrar x = 2
-
-- **Parámetros de Configuración**:
-  - **Tolerancia**: Precisión deseada (default: 0.000001)
-  - **Max. Iteraciones**: Máximo número de iteraciones (default: 100)
-
-### 2. Validación
-- Haz clic en **"✅ Validar"** para verificar tu entrada
-- La aplicación verificará:
-  - Sintaxis de la función
-  - Existencia de cambio de signo en el intervalo
-  - Evaluabilidad de la función en el intervalo
-
-### 3. Resolución
-- Haz clic en **"🚀 Resolver Ecuación"**
-- La aplicación cambiará automáticamente a la pestaña "Proceso de Solución"
-
-### 4. Visualización del Proceso
-- **Vista Iterativa**: Navega entre las iteraciones para ver cada paso
-- **Resultado Final**: Resumen completo con la raíz encontrada
-- **Controles de Navegación**: ⏮ Primero, ⏪ Anterior, Siguiente ⏩, Último ⏭
-
-## Ejemplos de Uso
-
-### Ejemplo 1: Función Cuadrática
-```
-Función: x**2 - 4
-Intervalo: [1, 3]
-Raíz esperada: x = 2
+### Dependencias
+```bash
+pip install -r requirements.txt
 ```
 
-### Ejemplo 2: Función Trigonométrica  
-```
-Función: sin(x)
-Intervalo: [3, 4] 
-Raíz esperada: x = π ≈ 3.14159
+Las dependencias principales son:
+- `customtkinter>=5.2.0` (interfaz gráfica moderna)
+- `numpy>=1.21.0` (cálculos numéricos)
+
+## Uso
+
+### Ejecutar la Aplicación
+```bash
+python main.py
 ```
 
-### Ejemplo 3: Función Exponencial
-```
-Función: exp(x) - 2
-Intervalo: [0, 1]
-Raíz esperada: x = ln(2) ≈ 0.69314
-```
+### Pasos para Resolver una Ecuación
 
-### Ejemplo 4: Función Logarítmica
-```
-Función: log(x) - 1
-Intervalo: [1, 5]
-Raíz esperada: x = e ≈ 2.71828
-```
+1. **Ingresar la función**: Escriba f(x) en el campo correspondiente
+   - Ejemplo: `x**3 - 2*x - 5`
+
+2. **Definir el intervalo**: Ingrese xl (límite inferior) y xu (límite superior)
+   - Asegúrese de que f(xl) y f(xu) tengan signos opuestos
+
+3. **Configurar parámetros** (opcional):
+   - Tolerancia: criterio de convergencia (default: 0.000001%)
+   - Máximo de iteraciones: límite de iteraciones (default: 100)
+
+4. **Validar**: Use el botón "Validar" para verificar la función e intervalo
+
+5. **Resolver**: Presione "Resolver Ecuación" para iniciar el proceso
+
+6. **Explorar resultados**: Use los controles de navegación para revisar cada iteración
+
+### Ejemplos Predefinidos
+
+La aplicación incluye ejemplos predefinidos que puede cargar usando el botón "Ejemplo":
+
+- **Polinomio Cúbico**: f(x) = x³ - 2x - 5
+- **Exponencial**: f(x) = e^(-x) - x  
+- **Trigonométrica**: f(x) = cos(x) - x
+
+## Algoritmo del Método de Bisección
+
+### Teoría
+
+El método de bisección se basa en el **teorema del valor intermedio**:
+
+Si f(x) es continua en [a,b] y f(a) × f(b) < 0, entonces existe al menos un valor c ∈ (a,b) tal que f(c) = 0.
+
+### Proceso Iterativo
+
+1. **Verificar condiciones iniciales**: f(xl) × f(xu) < 0
+2. **Calcular punto medio**: xr = (xl + xu) / 2
+3. **Evaluar función**: f(xr)
+4. **Seleccionar nuevo intervalo**:
+   - Si f(xl) × f(xr) < 0 → Nueva interval: [xl, xr]
+   - Si f(xl) × f(xr) > 0 → Nuevo interval: [xr, xu]
+5. **Calcular error relativo**: εa = |((xr_nuevo - xr_anterior) / xr_nuevo)| × 100%
+6. **Verificar convergencia**: εa < tolerancia
+7. **Repetir** hasta converger o alcanzar máximo de iteraciones
+
+### Visualización del Proceso
+
+La aplicación muestra para cada iteración:
+
+- **Valores del intervalo**: xl, xr, xu
+- **Evaluaciones de la función**: f(xl), f(xr), f(xu)  
+- **Criterio de decisión**: f(xl) × f(xr)
+- **Nuevo intervalo**: basado en el signo del producto
+- **Error relativo**: porcentaje de cambio entre iteraciones
+- **Estado de convergencia**: si se alcanzó la tolerancia
 
 ## Estructura del Proyecto
 
 ```
 Biseccion/
-├── main.py                 # Punto de entrada de la aplicación
-├── requirements.txt        # Dependencias de Python
+├── main.py                 # Punto de entrada principal
+├── requirements.txt        # Dependencias del proyecto
 ├── README.md              # Este archivo
-├── solver/
-│   └── biseccion.py       # Algoritmo de bisección
-├── gui/
+├── gui/                   # Interfaz gráfica
+│   ├── __init__.py
 │   ├── main_window.py     # Ventana principal
-│   └── components.py      # Componentes de interfaz
-├── utils/
+│   └── components.py      # Componentes de UI
+├── solver/                # Motor de cálculo
+│   ├── __init__.py
+│   └── biseccion.py       # Implementación del método
+├── utils/                 # Utilidades
+│   ├── __init__.py
 │   └── validators.py      # Validadores de entrada
-└── tests/
-    └── test_*.py          # Tests unitarios
+└── tests/                 # Pruebas unitarias
+    ├── __init__.py
+    └── test_solver.py     # Tests del solver
 ```
 
-## Algoritmo Implementado
+## Pruebas
 
-### Pseudocódigo del Método de Bisección
+### Ejecutar Tests
+```bash
+# Todos los tests
+python -m pytest tests/ -v
 
-```
-1. Verificar que f(a) × f(b) < 0
-2. Para i = 1, 2, ..., max_iteraciones:
-   a. xr = (a + b) / 2
-   b. Calcular f(xr)
-   c. Si |f(xr)| < tolerancia: ¡raíz encontrada!
-   d. Si f(a) × f(xr) < 0: b = xr
-   e. Si no: a = xr
-   f. Calcular error relativo
-   g. Si error < tolerancia: ¡convergencia!
-3. Retornar xr como aproximación de la raíz
+# Solo tests del solver
+python -m pytest tests/test_solver.py -v
+
+# Test específico
+python -m pytest tests/test_solver.py::TestBiseccionSolver::test_polynomial_function -v
 ```
 
-### Ventajas del Método
-- **Siempre converge** si hay cambio de signo
-- **Numéricamente estable**
-- **Fácil de implementar**
-- **No requiere derivadas**
+### Cobertura de Tests
 
-### Limitaciones
-- **Convergencia lenta** (lineal)
-- **Requiere cambio de signo**
-- **Una raíz por intervalo**
-- **No encuentra raíces múltiples**
+Los tests incluyen:
+- ✅ Funciones polinomiales, exponenciales, trigonométricas
+- ✅ Validación de intervalos y condiciones iniciales
+- ✅ Manejo de errores y casos límite
+- ✅ Convergencia con diferentes tolerancias
+- ✅ Creación de funciones desde expresiones string
+- ✅ Generación del proceso paso a paso
 
-## Solución de Problemas
+## Ventajas del Método de Bisección
 
-### Error: "No hay cambio de signo"
-- **Causa**: f(a) × f(b) ≥ 0
-- **Solución**: Cambia el intervalo [a,b] hasta que f(a) y f(b) tengan signos opuestos
-- **Tip**: Usa la función "Validar" para obtener sugerencias de intervalos
+### Pros ✅
+- **Garantía de convergencia** (si existen las condiciones iniciales)
+- **Simplicidad conceptual** y de implementación
+- **Estabilidad numérica** robusta
+- **Convergencia predecible** (error se reduce a la mitad cada iteración)
 
-### Error: "División por cero"
-- **Causa**: La función no está definida en algún punto del intervalo
-- **Solución**: Evita puntos donde la función es indefinida (ej: log(0), 1/x donde x=0)
+### Contras ❌
+- **Convergencia lenta** (lineal, no cuadrática)
+- **Requiere intervalo inicial** con cambio de signo
+- **Solo encuentra una raíz** por ejecución
+- **No funciona con raíces múltiples** o tangencias
 
-### Error: "Función no evaluable"
-- **Causa**: Sintaxis incorrecta o funciones no soportadas
-- **Solución**: Verifica la sintaxis y usa solo funciones soportadas
+## Casos de Uso Ideales
 
-### Convergencia Lenta
-- **Causa**: El método de bisección siempre converge linealmente
-- **Solución**: Aumenta el máximo de iteraciones o reduce la tolerancia
+- 🎯 **Ecuaciones transcendentales** complejas
+- 📊 **Funciones con múltiples discontinuidades**
+- 🔧 **Cuando se requiere garantía de convergencia**
+- 📈 **Análisis de comportamiento** de funciones no lineales
 
-## Contribuciones
+## Limitaciones
 
-Este proyecto fue desarrollado como material educativo para el aprendizaje de métodos numéricos.
+- No encuentra raíces complejas
+- Requiere continuidad de la función
+- No detecta raíces múltiples automáticamente
+- Necesita intervalo inicial apropiado
 
-### Autores
-- Andrés Monsivais Salazar
-- Luis Andrés Salinas Lozano
+## Contribuir
+
+1. Fork el proyecto
+2. Crear rama de feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit los cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abrir Pull Request
 
 ## Licencia
 
-Proyecto educativo - Uso libre para fines académicos.
+Este proyecto es de uso educativo. Desarrollado como parte del material de estudio de métodos numéricos.
+
+## Autores
+
+- **Andres Monsivais Salazar**
+- **Luis Andres Salinas Lozano**
+
+---
+
+**Nota**: Este proyecto forma parte de una serie de implementaciones de métodos numéricos que incluye también Gauss-Seidel y otros algoritmos de análisis numérico.

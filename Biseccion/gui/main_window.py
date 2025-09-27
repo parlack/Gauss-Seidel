@@ -1,24 +1,21 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
+import math
 
 from .components import (
     ModernButton, ModernEntry, FunctionInputPanel,
-    IntervalInputPanel, BiseccionVisualizationPanel
+    IntervalInputPanel, VisualizationPanel
 )
 from solver.biseccion import BiseccionSolver
-from utils.validators import FunctionValidator
 
 
 class BiseccionApp(ctk.CTk):
     """
-    Aplicación principal para resolver ecuaciones no lineales con bisección
-    
+    Aplicación principal para resolver ecuaciones con bisección
+
     Interfaz gráfica principal que integra todos los componentes
-    para resolver ecuaciones no lineales usando el método numérico
+    para resolver ecuaciones no lineales usando el método
     de bisección con visualización paso a paso
     """
 
@@ -27,12 +24,12 @@ class BiseccionApp(ctk.CTk):
 
         # Configuración de la ventana principal
         self.title("Resolver Ecuaciones No Lineales - Método de Bisección")
-        self.geometry("1400x900")
-        self.minsize(1200, 700)
+        self.geometry("1280x720")
+        self.minsize(1024, 500)
 
         # Variables de estado de la aplicación
-        self.solver = BiseccionSolver()  # instancia del solver
-        
+        self.solver = BiseccionSolver()  # Instancia del solver
+
         # Configurar tema visual
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
@@ -44,12 +41,12 @@ class BiseccionApp(ctk.CTk):
 
     def setup_ui(self):
         """Configura la interfaz de usuario principal"""
-        
+
         # Frame principal que contiene todo
         main_frame = ctk.CTkFrame(self, corner_radius=0)
         main_frame.pack(fill="both", expand=True)
 
-        # Crear header con título e información
+        # Crear header con título y información
         self.create_header(main_frame)
 
         # Frame de contenido principal
@@ -82,7 +79,7 @@ class BiseccionApp(ctk.CTk):
         # Subtítulo explicativo
         subtitle_label = ctk.CTkLabel(
             header_frame,
-            text="Método numérico de bisección con visualización paso a paso",
+            text="Método de bisección con visualización paso a paso",
             font=ctk.CTkFont(size=14),
             text_color=("gray50", "gray50")
         )
@@ -93,12 +90,12 @@ class BiseccionApp(ctk.CTk):
         info_frame.pack(side="right", padx=30, pady=20)
 
         # Etiqueta que muestra información del método
-        method_info_label = ctk.CTkLabel(
+        self.method_info_label = ctk.CTkLabel(
             info_frame,
-            text="Método: Bisección",
+            text="f(x) = 0",
             font=ctk.CTkFont(size=16, weight="bold")
         )
-        method_info_label.pack(padx=15, pady=10)
+        self.method_info_label.pack(padx=15, pady=10)
 
     def setup_input_tab(self):
         """Configura la pestaña de entrada de datos"""
@@ -110,148 +107,134 @@ class BiseccionApp(ctk.CTk):
 
         # Botones de control
         buttons_frame = ctk.CTkFrame(controls_frame)
-        buttons_frame.pack(side="left", padx=10, pady=10)
+        buttons_frame.pack(side="right", padx=10, pady=10)
 
         # Botón para limpiar todo
         ModernButton(
             buttons_frame,
-            text="🗑 Limpiar Todo",
+            text="Limpiar Todo",
             command=self.clear_all_inputs,
             fg_color="gray50",
-            width=130
+            width=120
         ).pack(side="left", padx=5, pady=5)
 
         # Botón para cargar ejemplo
         ModernButton(
             buttons_frame,
-            text="📋 Ejemplo",
+            text="Ejemplo",
             command=self.load_example,
             fg_color="orange",
-            width=130
+            width=120
         ).pack(side="left", padx=5, pady=5)
 
         # Botón para validar entrada
         ModernButton(
             buttons_frame,
-            text="✅ Validar",
+            text="Validar",
             command=self.validate_input,
             fg_color="green",
-            width=130
+            width=120
         ).pack(side="left", padx=5, pady=5)
 
-        # BOTÓN PRINCIPAL DE RESOLVER - Movido aquí para mejor visibilidad
+        # Botón principal de resolver
         self.solve_button = ModernButton(
             buttons_frame,
-            text="🚀 Resolver Ecuación",
+            text="Resolver Ecuación",
             command=self.solve_equation,
-            height=45,
-            font=ctk.CTkFont(size=14, weight="bold"),
-            fg_color="#1f538d",
-            width=180
+            height=55,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            fg_color="#1f538d"
         )
-        self.solve_button.pack(side="left", padx=10, pady=5)
+        self.solve_button.pack(fill="x", padx=10, pady=(10, 15), side="bottom")
 
-        # Configuración del solver
-        config_frame = ctk.CTkFrame(controls_frame)
-        config_frame.pack(side="right", padx=10, pady=10)
-
-        # Frame para tolerancia
-        tol_frame = ctk.CTkFrame(config_frame)
-        tol_frame.pack(side="left", padx=5, pady=5)
-
-        ctk.CTkLabel(
-            tol_frame,
-            text="Tolerancia:",
-            font=ctk.CTkFont(size=12, weight="bold")
-        ).pack(side="left", padx=(8, 2), pady=5)
-
-        self.tolerance_var = tk.StringVar(value="0.000001")
-        self.tolerance_entry = ModernEntry(
-            tol_frame,
-            textvariable=self.tolerance_var,
-            width=100,
-            placeholder="0.000001"
-        )
-        self.tolerance_entry.pack(side="left", padx=(2, 8), pady=5)
-
-        # Frame para máximo de iteraciones
-        max_iter_frame = ctk.CTkFrame(config_frame)
-        max_iter_frame.pack(side="left", padx=5, pady=5)
-
-        ctk.CTkLabel(
-            max_iter_frame,
-            text="Max. Iter:",
-            font=ctk.CTkFont(size=12, weight="bold")
-        ).pack(side="left", padx=(8, 2), pady=5)
-
-        self.max_iter_var = tk.StringVar(value="100")
-        self.max_iter_entry = ModernEntry(
-            max_iter_frame,
-            textvariable=self.max_iter_var,
-            width=80,
-            placeholder="100"
-        )
-        self.max_iter_entry.pack(side="left", padx=(2, 8), pady=5)
-
-        # Frame principal scrollable para función e intervalo
-        input_main_scroll = ctk.CTkScrollableFrame(input_tab)
-        input_main_scroll.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Frame contenedor dentro del scroll
-        input_main_frame = ctk.CTkFrame(input_main_scroll)
-        input_main_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        # Frame principal para entrada de datos
+        input_main_frame = ctk.CTkFrame(input_tab)
+        input_main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Frame izquierdo para la función
         left_frame = ctk.CTkFrame(input_main_frame)
         left_frame.pack(side="left", fill="both", expand=True, padx=(10, 5), pady=10)
 
-        # Widget para ingresar función matemática
+        # Widget para ingresar función
         self.function_input = FunctionInputPanel(
             left_frame,
             on_change=self.on_input_change
         )
         self.function_input.pack(fill="both", expand=True)
 
-        # Frame derecho para intervalo y gráfica
+        # Frame derecho para configuración con scroll
         right_frame = ctk.CTkFrame(input_main_frame)
-        right_frame.pack(side="right", fill="both", expand=True, padx=(5, 10), pady=10)
+        right_frame.pack(side="right", fill="both", padx=(5, 10), pady=10)
 
-        # Contenedor superior: intervalo
-        interval_container = ctk.CTkFrame(right_frame)
-        interval_container.pack(fill="x", padx=10, pady=10)
+        # Contenedor con scroll para las configuraciones
+        config_container = ctk.CTkScrollableFrame(right_frame, width=300, height=400)
+        config_container.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Widget para ingresar intervalo
+        # Panel para intervalo inicial
         self.interval_input = IntervalInputPanel(
-            interval_container,
+            config_container,
             on_change=self.on_input_change
         )
-        self.interval_input.pack(fill="both", expand=True)
+        self.interval_input.pack(fill="x", padx=10, pady=(0, 10))
 
-        # Frame para vista previa (tamaño fijo para no ocultar otros elementos)
-        graph_frame = ctk.CTkFrame(right_frame, height=120)
-        graph_frame.pack(fill="x", padx=10, pady=(10, 10))
-        graph_frame.pack_propagate(False)  # Mantener altura fija
+        # Configuración del solver
+        solver_config_frame = ctk.CTkFrame(config_container)
+        solver_config_frame.pack(fill="x", padx=10, pady=(10, 5))
 
-        graph_title = ctk.CTkLabel(
-            graph_frame,
-            text="📈 Vista Previa de la Función",
+        # Título de configuración
+        config_title = ctk.CTkLabel(
+            solver_config_frame,
+            text="Configuración del Solver",
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        config_title.pack(pady=(15, 20))
+
+        # Configuración de tolerancia
+        tol_frame = ctk.CTkFrame(solver_config_frame)
+        tol_frame.pack(fill="x", padx=15, pady=10)
+
+        # Etiqueta para tolerancia
+        ctk.CTkLabel(
+            tol_frame,
+            text="Tolerancia (%):",
             font=ctk.CTkFont(size=12, weight="bold")
-        )
-        graph_title.pack(pady=(8, 5))
+        ).pack(pady=(10, 5))
 
-        # Placeholder para gráfica
-        self.graph_placeholder = ctk.CTkLabel(
-            graph_frame,
-            text="La gráfica aparecerá aquí cuando\ningreses una función válida",
-            font=ctk.CTkFont(size=10),
-            text_color="gray60"
+        # Campo para ingresar tolerancia
+        self.tolerance_var = tk.StringVar(value="0.000001")
+        self.tolerance_entry = ModernEntry(
+            tol_frame,
+            textvariable=self.tolerance_var,
+            width=160,
+            placeholder="0.000001"
         )
-        self.graph_placeholder.pack(pady=(0, 8))
+        self.tolerance_entry.pack(pady=(0, 10))
 
-        # Barra de estado
+        # Configuración de máximo de iteraciones
+        max_iter_frame = ctk.CTkFrame(solver_config_frame)
+        max_iter_frame.pack(fill="x", padx=15, pady=10)
+
+        # Etiqueta para máximo de iteraciones
+        ctk.CTkLabel(
+            max_iter_frame,
+            text="Máx. Iteraciones:",
+            font=ctk.CTkFont(size=12, weight="bold")
+        ).pack(pady=(10, 5))
+
+        # Campo para ingresar máximo de iteraciones
+        self.max_iter_var = tk.StringVar(value="100")
+        self.max_iter_entry = ModernEntry(
+            max_iter_frame,
+            textvariable=self.max_iter_var,
+            width=160,
+            placeholder="100"
+        )
+        self.max_iter_entry.pack(pady=(0, 10))
+
+        # Barra de estado para mostrar mensajes al usuario
         self.status_label = ctk.CTkLabel(
             input_tab,
-            text="Introduce una función matemática y el intervalo de búsqueda",
+            text="Introduce la función f(x) y el intervalo [xl, xu]",
             font=ctk.CTkFont(size=12),
             text_color="gray60"
         )
@@ -262,7 +245,7 @@ class BiseccionApp(ctk.CTk):
         solution_tab = self.main_notebook.add("Proceso de Solución")
 
         # Panel principal de visualización del proceso
-        self.visualization_panel = BiseccionVisualizationPanel(solution_tab)
+        self.visualization_panel = VisualizationPanel(solution_tab)
         self.visualization_panel.pack(fill="both", expand=True, padx=10, pady=10)
 
     def center_window(self):
@@ -280,34 +263,9 @@ class BiseccionApp(ctk.CTk):
 
     def on_input_change(self):
         """Callback cuando cambian los datos de entrada"""
-        # Actualizar vista previa si es posible
-        self.update_function_preview()
-
-    def update_function_preview(self):
-        """Actualiza la vista previa de la función"""
-        try:
-            func_str = self.function_input.get_function()
-            if not func_str:
-                return
-
-            # Validar función
-            is_valid, _ = FunctionValidator.validate_function_syntax(func_str)
-            if not is_valid:
-                return
-
-            # Obtener intervalo si está disponible
-            a, b = self.interval_input.get_interval()
-            if a is None or b is None:
-                a, b = -5, 5  # intervalo por defecto
-
-            # Crear gráfica simple (esto se podría mejorar con matplotlib)
-            self.graph_placeholder.configure(
-                text=f"Función: f(x) = {func_str}\nIntervalo: [{a}, {b}]"
-            )
-
-        except Exception:
-            # Si hay error, no actualizar
-            pass
+        # Aquí se podría implementar validación en tiempo real
+        # Por ahora solo es un placeholder para futuras funcionalidades
+        pass
 
     def clear_all_inputs(self):
         """Limpia todas las entradas de la interfaz"""
@@ -319,89 +277,93 @@ class BiseccionApp(ctk.CTk):
         self.visualization_panel.clear()
         # Actualizar mensaje de estado
         self.update_status("Todas las entradas han sido limpiadas")
-        # Resetear vista previa
-        self.graph_placeholder.configure(
-            text="La gráfica aparecerá aquí cuando\ningreses una función válida"
-        )
 
     def load_example(self):
         """Carga un ejemplo predefinido"""
-        # Obtener ejemplos disponibles
-        examples = FunctionValidator.get_function_examples()
-        
-        # Mostrar dialog para seleccionar ejemplo
-        example_names = [f"{func} ({desc})" for func, desc, _ in examples]
-        
-        # Usar messagebox simple para selección (se podría mejorar con un dialog personalizado)
-        choice = messagebox.askyesno(
-            "Cargar Ejemplo",
-            "¿Quieres cargar un ejemplo de función cuadrática?\n\n"
-            "Función: x**2 - 4\n"
-            "Intervalo: [1, 3]\n"
-            "Raíces esperadas en x = ±2"
-        )
-        
-        if choice:
-            # Cargar ejemplo de función cuadrática
-            self.function_input.set_function("x**2 - 4")
-            self.interval_input.set_interval(1, 3)
-            self.update_status("Ejemplo cargado: función cuadrática con raíz en x = 2")
-            self.update_function_preview()
+        examples = [
+            {
+                'name': 'Polinomio Cúbico',
+                'function': 'x**3 - 2*x - 5',
+                'xl': 1,
+                'xu': 3,
+                'description': 'Ecuación cúbica simple'
+            },
+            {
+                'name': 'Exponencial',
+                'function': 'exp(-x) - x',
+                'xl': 0,
+                'xu': 1,
+                'description': 'Función exponencial vs lineal'
+            },
+            {
+                'name': 'Trigonométrica',
+                'function': 'cos(x) - x',
+                'xl': 0,
+                'xu': 1,
+                'description': 'Coseno vs función lineal'
+            }
+        ]
+
+        # Seleccionar ejemplo aleatoriamente o permitir al usuario elegir
+        import random
+        example = random.choice(examples)
+
+        # Cargar valores del ejemplo
+        self.function_input.set_function(example['function'])
+        self.interval_input.set_values(example['xl'], example['xu'])
+
+        self.update_status(f"Ejemplo cargado: {example['name']} - {example['description']}")
 
     def validate_input(self):
         """Valida la entrada actual del usuario"""
         try:
-            # Obtener función del usuario
-            func_str = self.function_input.get_function()
-            if not func_str:
+            # Obtener valores ingresados por el usuario
+            function_expr = self.function_input.get_function()
+            xl, xu = self.interval_input.get_values()
+
+            # Validar que la función no esté vacía
+            if not function_expr.strip():
                 self.update_status("Error: La función no puede estar vacía", is_error=True)
-                messagebox.showerror("Error de validación", "Debes ingresar una función matemática")
+                messagebox.showerror("Error de Validación", "Debe ingresar una función f(x)")
                 return False
 
-            # Validar sintaxis de la función
-            is_valid, message = FunctionValidator.validate_function_syntax(func_str)
-            if not is_valid:
-                self.update_status(f"Error en función: {message}", is_error=True)
-                messagebox.showerror("Error de validación", f"Función inválida: {message}")
+            # Validar intervalo
+            if xl >= xu:
+                self.update_status("Error: xl debe ser menor que xu", is_error=True)
+                messagebox.showerror("Error de Validación", "El límite inferior debe ser menor que el superior")
                 return False
 
-            # Obtener intervalo
-            a, b = self.interval_input.get_interval()
-            if a is None or b is None:
-                self.update_status("Error: Debes ingresar un intervalo válido", is_error=True)
-                messagebox.showerror("Error de validación", "Debes ingresar valores numéricos para el intervalo")
+            # Validar función e intervalo usando el solver
+            validation = self.solver.validate_function_and_interval(
+                self.solver.create_function_from_expression(function_expr), xl, xu
+            )
+
+            if not validation['valid']:
+                self.update_status(f"Error: {validation['message']}", is_error=True)
+                messagebox.showerror("Error de Validación", validation['message'])
                 return False
 
-            # Validar intervalo para bisección
-            is_valid, message, fa, fb = FunctionValidator.validate_bisection_interval(func_str, a, b)
-            if not is_valid:
-                self.update_status("Error en intervalo: No hay cambio de signo", is_error=True)
-                messagebox.showerror("Error de validación", message)
-                
-                # Sugerir intervalos alternativos
-                suggestions = FunctionValidator.suggest_interval_for_function(func_str)
-                if suggestions:
-                    suggestion_text = "Intervalos sugeridos donde f(x) cambia de signo:\n\n"
-                    for i, (sugg_a, sugg_b) in enumerate(suggestions[:3], 1):
-                        suggestion_text += f"{i}. [{sugg_a:.3f}, {sugg_b:.3f}]\n"
-                    
-                    use_suggestion = messagebox.askyesno(
-                        "Sugerencias de Intervalos",
-                        f"{suggestion_text}\n¿Quieres usar la primera sugerencia?"
-                    )
-                    
-                    if use_suggestion and suggestions:
-                        sugg_a, sugg_b = suggestions[0]
-                        self.interval_input.set_interval(sugg_a, sugg_b)
-                        self.update_status(f"Usando intervalo sugerido: [{sugg_a:.3f}, {sugg_b:.3f}]")
-                        return True
-                
-                return False
+            # Mostrar información de validación exitosa
+            f_xl = validation['f_xl']
+            f_xu = validation['f_xu']
+            
+            success_msg = (
+                f"Validación exitosa:\n\n"
+                f"f({xl}) = {f_xl:.6f}\n"
+                f"f({xu}) = {f_xu:.6f}\n"
+                f"f(xl) × f(xu) = {f_xl * f_xu:.6f} < 0 ✓\n\n"
+                f"Se garantiza la existencia de al menos una raíz en [{xl}, {xu}]"
+            )
 
-            # Todo válido
-            self.update_status(f"Validación exitosa. f({a}) = {fa:.6f}, f({b}) = {fb:.6f}")
+            messagebox.showinfo("Validación Exitosa", success_msg)
+            self.update_status("Validación exitosa. Función y intervalo listos para resolver")
             return True
 
+        except ValueError as e:
+            error_msg = str(e)
+            self.update_status(f"Error: {error_msg}", is_error=True)
+            messagebox.showerror("Error de Validación", f"Error en la función:\n\n{error_msg}\n\nVerifica que la función esté correctamente escrita.")
+            return False
         except Exception as e:
             error_msg = f"Error inesperado: {str(e)}"
             self.update_status(error_msg, is_error=True)
@@ -410,18 +372,20 @@ class BiseccionApp(ctk.CTk):
 
     def solve_equation(self):
         """Resuelve la ecuación usando bisección"""
-        # Validar entrada primero
+        # Validar entrada primero antes de proceder
         if not self.validate_input():
             return
 
         try:
-            # Obtener función e intervalo
-            func_str = self.function_input.get_function()
-            a, b = self.interval_input.get_interval()
+            # Obtener valores ingresados por el usuario
+            function_expr = self.function_input.get_function()
+            xl, xu = self.interval_input.get_values()
 
             # Configurar parámetros del solver
             try:
+                # Configurar tolerancia
                 self.solver.tolerance = float(self.tolerance_var.get())
+                # Configurar máximo número de iteraciones
                 self.solver.max_iterations = int(self.max_iter_var.get())
             except ValueError:
                 messagebox.showerror("Error", "Valores de configuración inválidos")
@@ -433,13 +397,13 @@ class BiseccionApp(ctk.CTk):
             self.update_idletasks()
 
             # Generar pasos detallados del proceso
-            steps_data = self.solver.generate_step_by_step(func_str, a, b)
+            steps_data = self.solver.generate_step_by_step(function_expr, xl, xu)
 
             # Verificar si hubo errores en el proceso
             if steps_data and steps_data[0].get('type') == 'error':
-                error_msg = steps_data[0]['content']
+                error_msg = steps_data[0].get('content', 'Error desconocido')
                 self.update_status(f"Error: {error_msg}", is_error=True)
-                messagebox.showerror("Error de resolución", error_msg)
+                messagebox.showerror("Error en el Proceso", error_msg)
                 return
 
             # Actualizar panel de visualización con los resultados
@@ -449,22 +413,29 @@ class BiseccionApp(ctk.CTk):
             self.main_notebook.set("Proceso de Solución")
 
             # Actualizar status basado en el resultado
-            result = steps_data[-1]  # último paso contiene el resultado final
-            if result.get('converged', False):
-                root = result.get('root', 0)
-                iterations = result.get('iterations', 0)
-                self.update_status(f"¡Raíz encontrada! x = {root:.8f} en {iterations} iteraciones")
+            result_step = next((step for step in steps_data if step.get('type') == 'result'), None)
+            if result_step:
+                if result_step.get('converged'):
+                    root = result_step.get('solution')
+                    iterations = result_step.get('iterations')
+                    self.update_status(f"Ecuación resuelta: raíz ≈ {root:.6f} en {iterations} iteraciones")
+                else:
+                    self.update_status("Proceso completado (convergencia no alcanzada)", is_warning=True)
             else:
-                self.update_status("Máximo de iteraciones alcanzado - Solución aproximada obtenida", is_warning=True)
+                self.update_status("Proceso completado")
 
+        except ValueError as e:
+            error_msg = str(e)
+            self.update_status(f"Error: {error_msg}", is_error=True)
+            messagebox.showerror("Error de Resolución", f"Error en la evaluación de la función:\n\n{error_msg}\n\nVerifica que:\n• La función esté bien escrita\n• No haya divisiones por cero\n• No haya logaritmos de números negativos\n• El intervalo sea apropiado")
         except Exception as e:
-            error_msg = f"Error al resolver: {str(e)}"
+            error_msg = f"Error inesperado: {str(e)}"
             self.update_status(error_msg, is_error=True)
-            messagebox.showerror("Error de resolución", error_msg)
+            messagebox.showerror("Error de Resolución", error_msg)
 
         finally:
             # Restaurar estado del botón principal
-            self.solve_button.configure(text="🚀 Resolver Ecuación", state="normal")
+            self.solve_button.configure(text="Resolver Ecuación", state="normal")
 
     def update_status(self, message: str, is_error: bool = False, is_warning: bool = False):
         """Actualiza el mensaje de estado en la barra inferior"""
@@ -472,7 +443,7 @@ class BiseccionApp(ctk.CTk):
         if is_error:
             color = "red"
         elif is_warning:
-            color = "orange"  
+            color = "orange"
         else:
             color = ("gray60", "gray40")
 

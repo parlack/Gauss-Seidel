@@ -1,1 +1,1 @@
-# Utils package for Biseccion method
+# Utils module for Bisection method

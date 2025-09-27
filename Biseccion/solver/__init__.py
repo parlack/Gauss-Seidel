@@ -1,1 +1,1 @@
-# Solver package for Biseccion method
+# Solver module for Bisection method

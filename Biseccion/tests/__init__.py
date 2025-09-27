@@ -1,1 +1,1 @@
-# Tests package for Biseccion method
+# Tests module for Bisection method

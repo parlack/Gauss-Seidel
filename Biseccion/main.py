@@ -1,5 +1,5 @@
-# Andrés Monsivais Salazar
-# Luis Andrés Salinas Lozano
+# Andres Monsivais Salazar
+# Luis Andres Salinas Lozano
 
 import sys
 import tkinter as tk
@@ -19,11 +19,6 @@ def check_dependencies():
         import numpy  # noqa: F401
     except ImportError:
         missing_deps.append("numpy")
-
-    try:
-        import matplotlib  # noqa: F401
-    except ImportError:
-        missing_deps.append("matplotlib")
 
     if missing_deps:
         deps_str = ", ".join(missing_deps)
@@ -57,7 +52,7 @@ def setup_closing_protocol(app):
     """Configura el protocolo de cierre de la aplicación"""
     def on_closing():
         """Maneja el cierre de la aplicación"""
-        question = "¿Estás seguro de que quieres salir de la aplicación?"
+        question = "¿Estás segurisimoo de que quieres salir de aca?"
         if messagebox.askokcancel("Salir", question):
             app.quit()
             app.destroy()

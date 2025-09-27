@@ -1,459 +1,307 @@
 import math
-import numpy as np
-from typing import Tuple, Optional, List, Dict
-import re
+from typing import Tuple, Dict, Callable
 
 
 class FunctionValidator:
     """
     Validador para funciones matemáticas y parámetros del método de bisección
     
-    Esta clase proporciona métodos estáticos para validar funciones matemáticas,
-    intervalos y parámetros numéricos utilizados en el método de bisección
+    Proporciona métodos estáticos para validar que las funciones y intervalos
+    sean apropiados para el método de bisección
     """
-
-    # Funciones matemáticas permitidas
-    ALLOWED_FUNCTIONS = {
-        'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
-        'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
-        'log', 'ln', 'log10', 'exp', 'sqrt', 'abs', 'pow',
-        'floor', 'ceil', 'round'
-    }
     
-    # Constantes matemáticas permitidas
-    ALLOWED_CONSTANTS = {'pi', 'e', 'x'}
+    @staticmethod
+    def validate_function_expression(expression: str) -> Tuple[bool, str]:
+        """
+        Valida que una expresión matemática sea válida y segura
+        
+        Args:
+            expression: expresión matemática como string
+            
+        Returns:
+            tupla (es_valida, mensaje_error)
+        """
+        if not expression or not expression.strip():
+            return False, "La expresión no puede estar vacía"
+        
+        expression = expression.strip()
+        
+        # Caracteres permitidos (básicos)
+        allowed_chars = set("x0123456789+-*/.()^** abcdefghijklmnopqrstuvwxyz")
+        
+        # Verificar caracteres no permitidos
+        for char in expression.lower():
+            if char not in allowed_chars:
+                return False, f"Carácter no permitido: '{char}'"
+        
+        # Verificar que contenga al menos una 'x'
+        if 'x' not in expression.lower():
+            return False, "La expresión debe contener la variable 'x'"
+        
+        # Verificar paréntesis balanceados
+        if not FunctionValidator._are_parentheses_balanced(expression):
+            return False, "Los paréntesis no están balanceados"
+        
+        # Intentar crear y evaluar la función en un punto de prueba
+        try:
+            # Importar solver para usar el método create_function_from_expression
+            from solver.biseccion import BiseccionSolver
+            solver = BiseccionSolver()
+            test_func = solver.create_function_from_expression(expression)
+            
+            # Probar evaluación en puntos de prueba
+            test_points = [0.0, 1.0, -1.0, 0.5, -0.5]
+            valid_evaluations = 0
+            
+            for point in test_points:
+                try:
+                    result = test_func(point)
+                    if math.isfinite(result):
+                        valid_evaluations += 1
+                except:
+                    continue
+            
+            if valid_evaluations == 0:
+                return False, "La función no se puede evaluar en ningún punto de prueba"
+            
+            return True, "Expresión válida"
+            
+        except Exception as e:
+            return False, f"Error en la expresión: {str(e)}"
     
-    # Operadores permitidos
-    ALLOWED_OPERATORS = {'+', '-', '*', '/', '**', '^', '(', ')'}
-
     @staticmethod
-    def _create_safe_namespace(x: float) -> Dict:
+    def validate_interval(xl: float, xu: float) -> Tuple[bool, str]:
         """
-        Crea un namespace seguro para evaluación de funciones
+        Valida que un intervalo sea apropiado para bisección
         
         Args:
-            x: valor de la variable x
+            xl: límite inferior
+            xu: límite superior
             
         Returns:
-            dict con funciones y constantes seguras
+            tupla (es_valido, mensaje_error)
         """
-        return {
-            'x': x,
-            # Constantes matemáticas
-            'pi': math.pi,
-            'e': math.e,
-            
-            # Funciones trigonométricas
-            'sin': math.sin,
-            'cos': math.cos,
-            'tan': math.tan,
-            'asin': math.asin,
-            'acos': math.acos,
-            'atan': math.atan,
-            
-            # Funciones hiperbólicas
-            'sinh': math.sinh,
-            'cosh': math.cosh,
-            'tanh': math.tanh,
-            
-            # Funciones logarítmicas y exponenciales
-            'log': math.log,
-            'ln': math.log,  # alias para log natural
-            'log10': math.log10,
-            'exp': math.exp,
-            
-            # Otras funciones matemáticas
-            'sqrt': math.sqrt,
-            'abs': abs,
-            'pow': pow,
-            'floor': math.floor,
-            'ceil': math.ceil,
-            'round': round,
-            
-            # Deshabilitar builtins peligrosos
-            '__builtins__': {}
-        }
-
+        # Verificar que sean números finitos
+        if not (math.isfinite(xl) and math.isfinite(xu)):
+            return False, "Los límites del intervalo deben ser números finitos"
+        
+        # Verificar que xl < xu
+        if xl >= xu:
+            return False, "El límite inferior debe ser menor que el superior"
+        
+        # Verificar que el intervalo no sea demasiado pequeño
+        if abs(xu - xl) < 1e-15:
+            return False, "El intervalo es demasiado pequeño"
+        
+        # Verificar que el intervalo no sea demasiado grande
+        if abs(xu - xl) > 1e10:
+            return False, "El intervalo es demasiado grande"
+        
+        return True, "Intervalo válido"
+    
     @staticmethod
-    def _preprocess_function(func_str: str) -> str:
+    def validate_function_in_interval(func: Callable[[float], float], xl: float, xu: float) -> Tuple[bool, str, Dict]:
         """
-        Preprocesa la función para hacerla evaluable
+        Valida que una función sea apropiada para bisección en un intervalo dado
         
         Args:
-            func_str: función como string
+            func: función a validar
+            xl: límite inferior
+            xu: límite superior
             
         Returns:
-            función preprocesada
-        """
-        # Remover espacios extra
-        func_clean = func_str.strip()
-        
-        # Reemplazar notaciones comunes
-        replacements = [
-            ('^', '**'),  # potencias
-            ('ln(', 'log('),  # logaritmo natural
-            ('π', 'pi'),  # pi unicode
-            ('²', '**2'),  # cuadrado unicode
-            ('³', '**3'),  # cubo unicode
-        ]
-        
-        for old, new in replacements:
-            func_clean = func_clean.replace(old, new)
-        
-        # Agregar multiplicación implícita antes de paréntesis y variables
-        # Por ejemplo: 2x -> 2*x, 3(x+1) -> 3*(x+1)
-        func_clean = re.sub(r'(\d)([a-zA-Z\(])', r'\1*\2', func_clean)
-        func_clean = re.sub(r'([a-zA-Z\)])(\d)', r'\1*\2', func_clean)
-        func_clean = re.sub(r'([a-zA-Z\)])\(', r'\1*(', func_clean)
-        
-        return func_clean
-
-    @staticmethod
-    def validate_function_syntax(func_str: str) -> Tuple[bool, str]:
-        """
-        Valida la sintaxis de una función matemática
-        
-        Args:
-            func_str: función como string
-            
-        Returns:
-            tuple con (es_válida, mensaje)
-        """
-        if not func_str or not func_str.strip():
-            return False, "La función no puede estar vacía"
-        
-        # Preprocesar función
-        try:
-            func_clean = FunctionValidator._preprocess_function(func_str)
-        except Exception as e:
-            return False, f"Error en preprocesamiento: {str(e)}"
-        
-        # Verificar caracteres permitidos
-        allowed_chars = set('0123456789+-*/().^ abcdefghijklmnopqrstuvwxyz')
-        if not set(func_clean.lower()).issubset(allowed_chars):
-            invalid_chars = set(func_clean.lower()) - allowed_chars
-            return False, f"Caracteres no permitidos: {', '.join(invalid_chars)}"
-        
-        # Verificar balance de paréntesis
-        if func_clean.count('(') != func_clean.count(')'):
-            return False, "Paréntesis desbalanceados"
-        
-        # Verificar que contiene la variable x
-        if 'x' not in func_clean.lower():
-            return False, "La función debe contener la variable 'x'"
-        
-        # Intentar parsear la función con un valor de prueba
-        try:
-            namespace = FunctionValidator._create_safe_namespace(1.0)
-            eval(func_clean, namespace)
-        except SyntaxError:
-            return False, "Error de sintaxis en la función"
-        except NameError as e:
-            return False, f"Variable o función no reconocida: {str(e)}"
-        except Exception as e:
-            # No reportar errores matemáticos aquí, solo sintácticos
-            pass
-        
-        return True, "Sintaxis válida"
-
-    @staticmethod
-    def evaluate_function_safely(func_str: str, x: float) -> Tuple[bool, float, str]:
-        """
-        Evalúa una función de manera segura en un punto específico
-        
-        Args:
-            func_str: función como string
-            x: valor donde evaluar
-            
-        Returns:
-            tuple con (éxito, resultado, mensaje_error)
+            tupla (es_valido, mensaje, datos_adicionales)
         """
         try:
-            # Preprocesar función
-            func_clean = FunctionValidator._preprocess_function(func_str)
+            # Evaluar función en los extremos
+            f_xl = func(xl)
+            f_xu = func(xu)
             
-            # Crear namespace seguro
-            namespace = FunctionValidator._create_safe_namespace(x)
+            # Verificar que los valores sean finitos
+            if not (math.isfinite(f_xl) and math.isfinite(f_xu)):
+                return False, "La función no está definida en uno o ambos extremos del intervalo", {
+                    'f_xl': f_xl,
+                    'f_xu': f_xu,
+                    'product': None
+                }
             
-            # Evaluar función
-            result = eval(func_clean, namespace)
+            # Verificar signos opuestos
+            product = f_xl * f_xu
             
-            # Verificar que el resultado es un número válido
-            if not isinstance(result, (int, float, complex)):
-                return False, 0.0, f"Resultado no numérico: {type(result).__name__}"
+            if product > 0:
+                return False, "f(xl) y f(xu) deben tener signos opuestos", {
+                    'f_xl': f_xl,
+                    'f_xu': f_xu,
+                    'product': product
+                }
             
-            # Convertir a float si es complejo con parte imaginaria cero
-            if isinstance(result, complex):
-                if abs(result.imag) < 1e-10:
-                    result = result.real
+            if product == 0:
+                if f_xl == 0:
+                    return True, f"Raíz exacta encontrada en xl = {xl}", {
+                        'f_xl': f_xl,
+                        'f_xu': f_xu,
+                        'product': product,
+                        'exact_root': xl
+                    }
                 else:
-                    return False, 0.0, f"Resultado complejo: {result}"
+                    return True, f"Raíz exacta encontrada en xu = {xu}", {
+                        'f_xl': f_xl,
+                        'f_xu': f_xu,
+                        'product': product,
+                        'exact_root': xu
+                    }
             
-            result = float(result)
+            # Todo está bien para bisección
+            return True, "La función es apropiada para bisección en este intervalo", {
+                'f_xl': f_xl,
+                'f_xu': f_xu,
+                'product': product
+            }
             
-            # Verificar valores especiales
-            if math.isnan(result):
-                return False, 0.0, f"Resultado indefinido (NaN) en x={x}"
-            elif math.isinf(result):
-                return False, 0.0, f"Resultado infinito en x={x}"
-            
-            return True, result, "Evaluación exitosa"
-            
-        except ZeroDivisionError:
-            return False, 0.0, f"División por cero en x={x}"
-        except ValueError as e:
-            return False, 0.0, f"Error de valor en x={x}: {str(e)}"
-        except OverflowError:
-            return False, 0.0, f"Desbordamiento numérico en x={x}"
         except Exception as e:
-            return False, 0.0, f"Error al evaluar en x={x}: {str(e)}"
-
+            return False, f"Error evaluando la función: {str(e)}", {
+                'f_xl': None,
+                'f_xu': None,
+                'product': None
+            }
+    
     @staticmethod
-    def validate_function_in_interval(func_str: str, a: float, b: float, 
-                                    num_points: int = 10) -> Tuple[bool, str, List[float]]:
+    def validate_solver_parameters(tolerance: float, max_iterations: int) -> Tuple[bool, str]:
         """
-        Valida que la función sea evaluable en un intervalo
+        Valida los parámetros del solver de bisección
         
         Args:
-            func_str: función como string
-            a: límite inferior
-            b: límite superior  
-            num_points: número de puntos de prueba
+            tolerance: tolerancia para convergencia
+            max_iterations: máximo número de iteraciones
             
         Returns:
-            tuple con (es_válida, mensaje, lista_de_valores)
+            tupla (son_validos, mensaje_error)
         """
-        if a >= b:
-            return False, f"Intervalo inválido: a={a} debe ser menor que b={b}", []
+        # Validar tolerancia
+        if not math.isfinite(tolerance) or tolerance <= 0:
+            return False, "La tolerancia debe ser un número positivo"
         
-        # Generar puntos de prueba en el intervalo
-        test_points = np.linspace(a, b, num_points)
-        values = []
-        problematic_points = []
+        if tolerance > 100:
+            return False, "La tolerancia no puede ser mayor que 100%"
         
-        for x in test_points:
-            success, value, error = FunctionValidator.evaluate_function_safely(func_str, x)
-            if success:
-                values.append(value)
-            else:
-                problematic_points.append((x, error))
+        if tolerance < 1e-15:
+            return False, "La tolerancia es demasiado pequeña (puede causar problemas de precisión)"
         
-        # Si hay demasiados puntos problemáticos, la función no es válida
-        if len(problematic_points) > num_points // 3:
-            error_msgs = [f"x={x:.3f}: {msg}" for x, msg in problematic_points[:3]]
-            return False, f"Función no evaluable en el intervalo. Errores: {'; '.join(error_msgs)}", []
+        # Validar máximo de iteraciones
+        if not isinstance(max_iterations, int) or max_iterations <= 0:
+            return False, "El máximo de iteraciones debe ser un entero positivo"
         
-        # Si hay algunos puntos problemáticos pero no muchos, es una advertencia
-        if problematic_points:
-            warning_points = [f"x={x:.3f}" for x, _ in problematic_points[:2]]
-            message = f"Advertencia: función no evaluable en algunos puntos: {', '.join(warning_points)}"
-        else:
-            message = "Función evaluable en todo el intervalo"
+        if max_iterations > 10000:
+            return False, "El máximo de iteraciones es demasiado alto (máximo: 10000)"
         
-        return True, message, values
-
+        return True, "Parámetros válidos"
+    
     @staticmethod
-    def validate_bisection_interval(func_str: str, a: float, b: float) -> Tuple[bool, str, float, float]:
+    def suggest_better_interval(func: Callable[[float], float], initial_xl: float, initial_xu: float, 
+                               num_points: int = 20) -> Dict:
         """
-        Valida específicamente un intervalo para el método de bisección
+        Sugiere un mejor intervalo si el actual no es válido para bisección
         
         Args:
-            func_str: función como string
-            a: límite inferior
-            b: límite superior
+            func: función a analizar
+            initial_xl: límite inferior inicial
+            initial_xu: límite superior inicial
+            num_points: número de puntos a evaluar
             
         Returns:
-            tuple con (es_válido, mensaje, f(a), f(b))
-        """
-        # Validar que a < b
-        if a >= b:
-            return False, f"Intervalo inválido: a={a} debe ser menor que b={b}", 0, 0
-        
-        # Evaluar función en los extremos
-        success_a, fa, error_a = FunctionValidator.evaluate_function_safely(func_str, a)
-        if not success_a:
-            return False, f"Error al evaluar f({a}): {error_a}", 0, 0
-        
-        success_b, fb, error_b = FunctionValidator.evaluate_function_safely(func_str, b)
-        if not success_b:
-            return False, f"Error al evaluar f({b}): {error_b}", 0, 0
-        
-        # Verificar teorema de Bolzano (cambio de signo)
-        if fa * fb > 0:
-            # Intentar encontrar un subintervalo con cambio de signo
-            sign_change_found, new_a, new_b, new_fa, new_fb = FunctionValidator._find_sign_change(
-                func_str, a, b, fa, fb
-            )
-            
-            if sign_change_found:
-                return False, (
-                    f"No hay cambio de signo en [{a}, {b}], pero se encontró en [{new_a:.6f}, {new_b:.6f}]\n"
-                    f"f({a}) = {fa:.6f}, f({b}) = {fb:.6f}\n"
-                    f"Sugerencia: usar intervalo [{new_a:.6f}, {new_b:.6f}] donde f({new_a:.6f}) = {new_fa:.6f} y f({new_b:.6f}) = {new_fb:.6f}"
-                ), fa, fb
-            else:
-                return False, (
-                    f"No hay cambio de signo en el intervalo [{a}, {b}]\n"
-                    f"f({a}) = {fa:.6f}\n"
-                    f"f({b}) = {fb:.6f}\n"
-                    f"El método de bisección requiere que f(a) × f(b) < 0"
-                ), fa, fb
-        
-        elif fa * fb == 0:
-            # Una de las evaluaciones es exactamente cero (raíz en el extremo)
-            if fa == 0:
-                return False, f"f({a}) = 0: La raíz está exactamente en x = {a}", fa, fb
-            else:
-                return False, f"f({b}) = 0: La raíz está exactamente en x = {b}", fa, fb
-        
-        # Todo está bien: hay cambio de signo
-        return True, f"Intervalo válido: f({a}) = {fa:.6f}, f({b}) = {fb:.6f}", fa, fb
-
-    @staticmethod
-    def _find_sign_change(func_str: str, a: float, b: float, fa: float, fb: float, 
-                         divisions: int = 20) -> Tuple[bool, float, float, float, float]:
-        """
-        Busca un subintervalo donde ocurra cambio de signo
-        
-        Args:
-            func_str: función como string
-            a, b: límites del intervalo
-            fa, fb: valores de la función en los extremos
-            divisions: número de subdivisiones a probar
-            
-        Returns:
-            tuple con (encontrado, nuevo_a, nuevo_b, nuevo_fa, nuevo_fb)
+            diccionario con sugerencias
         """
         try:
-            # Dividir el intervalo y buscar cambios de signo
-            points = np.linspace(a, b, divisions + 1)
+            # Expandir el intervalo inicial
+            expanded_xl = initial_xl - abs(initial_xu - initial_xl)
+            expanded_xu = initial_xu + abs(initial_xu - initial_xl)
+            
+            # Evaluar función en varios puntos
+            dx = (expanded_xu - expanded_xl) / (num_points - 1)
+            points = []
+            
+            for i in range(num_points):
+                x = expanded_xl + i * dx
+                try:
+                    y = func(x)
+                    if math.isfinite(y):
+                        points.append((x, y))
+                except:
+                    continue
+            
+            if len(points) < 2:
+                return {
+                    'success': False,
+                    'message': 'No se pudo evaluar la función en suficientes puntos',
+                    'suggestions': []
+                }
+            
+            # Buscar cambios de signo
+            intervals = []
             
             for i in range(len(points) - 1):
-                x1, x2 = points[i], points[i + 1]
+                x1, y1 = points[i]
+                x2, y2 = points[i + 1]
                 
-                # Evaluar función en los puntos
-                success1, f1, _ = FunctionValidator.evaluate_function_safely(func_str, x1)
-                success2, f2, _ = FunctionValidator.evaluate_function_safely(func_str, x2)
-                
-                # Si ambas evaluaciones fueron exitosas y hay cambio de signo
-                if success1 and success2 and f1 * f2 < 0:
-                    return True, x1, x2, f1, f2
+                if y1 * y2 < 0:  # Cambio de signo
+                    intervals.append({
+                        'xl': x1,
+                        'xu': x2,
+                        'f_xl': y1,
+                        'f_xu': y2,
+                        'width': x2 - x1
+                    })
             
-            return False, a, b, fa, fb
+            if not intervals:
+                return {
+                    'success': False,
+                    'message': 'No se encontraron cambios de signo en el intervalo expandido',
+                    'suggestions': [],
+                    'points_evaluated': points
+                }
             
-        except Exception:
-            return False, a, b, fa, fb
-
+            # Ordenar intervalos por ancho (preferir intervalos más pequeños)
+            intervals.sort(key=lambda x: x['width'])
+            
+            return {
+                'success': True,
+                'message': f'Se encontraron {len(intervals)} intervalo(s) con cambio de signo',
+                'suggestions': intervals[:3],  # Máximo 3 sugerencias
+                'points_evaluated': points
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Error analizando la función: {str(e)}',
+                'suggestions': []
+            }
+    
     @staticmethod
-    def validate_numerical_parameter(value_str: str, param_name: str, 
-                                   min_value: Optional[float] = None,
-                                   max_value: Optional[float] = None,
-                                   allow_zero: bool = True) -> Tuple[bool, str, Optional[float]]:
-        """
-        Valida un parámetro numérico
-        
-        Args:
-            value_str: valor como string
-            param_name: nombre del parámetro para mensajes de error
-            min_value: valor mínimo permitido
-            max_value: valor máximo permitido
-            allow_zero: si se permite el valor cero
-            
-        Returns:
-            tuple con (es_válido, mensaje, valor_convertido)
-        """
-        if not value_str or not value_str.strip():
-            return False, f"{param_name} no puede estar vacío", None
-        
-        try:
-            value = float(value_str.strip())
-            
-            # Verificar valores especiales
-            if math.isnan(value):
-                return False, f"{param_name} no puede ser NaN", None
-            if math.isinf(value):
-                return False, f"{param_name} no puede ser infinito", None
-            
-            # Verificar cero si no está permitido
-            if not allow_zero and value == 0:
-                return False, f"{param_name} no puede ser cero", None
-            
-            # Verificar rango
-            if min_value is not None and value < min_value:
-                return False, f"{param_name} debe ser mayor o igual a {min_value}", None
-            if max_value is not None and value > max_value:
-                return False, f"{param_name} debe ser menor o igual a {max_value}", None
-            
-            return True, f"{param_name} válido", value
-            
-        except ValueError:
-            return False, f"{param_name} debe ser un número válido", None
-
+    def _are_parentheses_balanced(expression: str) -> bool:
+        """Verifica que los paréntesis estén balanceados"""
+        count = 0
+        for char in expression:
+            if char == '(':
+                count += 1
+            elif char == ')':
+                count -= 1
+                if count < 0:  # Más ')' que '('
+                    return False
+        return count == 0  # Mismo número de '(' y ')'
+    
     @staticmethod
-    def suggest_interval_for_function(func_str: str, search_range: Tuple[float, float] = (-10, 10),
-                                    divisions: int = 100) -> List[Tuple[float, float]]:
-        """
-        Sugiere intervalos donde la función podría tener raíces
-        
-        Args:
-            func_str: función como string
-            search_range: rango de búsqueda
-            divisions: número de puntos de evaluación
-            
-        Returns:
-            lista de intervalos sugeridos (a, b) donde f(a)*f(b) < 0
-        """
-        suggestions = []
-        
-        try:
-            # Validar función primero
-            is_valid, _ = FunctionValidator.validate_function_syntax(func_str)
-            if not is_valid:
-                return suggestions
-            
-            # Generar puntos de evaluación
-            start, end = search_range
-            points = np.linspace(start, end, divisions + 1)
-            
-            # Evaluar función en todos los puntos
-            evaluations = []
-            for x in points:
-                success, fx, _ = FunctionValidator.evaluate_function_safely(func_str, x)
-                if success:
-                    evaluations.append((x, fx))
-            
-            # Buscar cambios de signo entre puntos consecutivos
-            for i in range(len(evaluations) - 1):
-                x1, f1 = evaluations[i]
-                x2, f2 = evaluations[i + 1]
-                
-                # Si hay cambio de signo, es un intervalo candidato
-                if f1 * f2 < 0:
-                    suggestions.append((x1, x2))
-            
-            # Limitar número de sugerencias para no abrumar al usuario
-            return suggestions[:5]
-            
-        except Exception:
-            return suggestions
-
-    @staticmethod
-    def get_function_examples() -> List[Tuple[str, str, Tuple[float, float]]]:
-        """
-        Obtiene ejemplos de funciones comunes con intervalos sugeridos
-        
-        Returns:
-            lista de tuplas (función, descripción, intervalo_sugerido)
-        """
-        return [
-            ("x**2 - 4", "Parábola con raíces en ±2", (-3, 3)),
-            ("x**3 - x", "Cúbica con múltiples raíces", (-2, 2)),
-            ("sin(x)", "Función seno", (3, 4)),
-            ("cos(x) - 0.5", "Coseno desplazado", (0, 2)),
-            ("exp(x) - 2", "Exponencial menos constante", (0, 1)),
-            ("log(x) - 1", "Logaritmo menos constante", (1, 5)),
-            ("x**3 + x**2 - 1", "Polinomio cúbico", (0, 1)),
-            ("sin(x) - x/2", "Seno vs línea recta", (1, 2)),
-            ("sqrt(x) - 2", "Raíz cuadrada menos constante", (1, 5)),
-            ("x**2 - 2*x - 3", "Parábola con raíces en -1 y 3", (-2, 4))
-        ]
+    def get_function_help() -> Dict[str, str]:
+        """Retorna información de ayuda sobre funciones disponibles"""
+        return {
+            'operators': 'Operadores: +, -, *, /, ** (potencia), () (paréntesis)',
+            'functions': 'Funciones: sin(x), cos(x), tan(x), exp(x), log(x), sqrt(x), abs(x)',
+            'constants': 'Constantes: pi, e',
+            'examples': [
+                'x**2 - 4',
+                'sin(x) - 0.5',
+                'exp(x) - 2*x',
+                'log(x) - 1',
+                'x**3 - 2*x - 5'
+            ]
+        }
