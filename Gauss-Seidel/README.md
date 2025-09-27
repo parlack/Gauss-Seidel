@@ -1,10 +1,10 @@
-# 🔢 Resolver Sistemas de Ecuaciones - Método de Gauss-Seidel
+# 🔢 Método de Gauss-Seidel - Resolución de Sistemas de Ecuaciones Lineales
 
-Una aplicación Python con interfaz gráfica moderna para resolver sistemas de ecuaciones lineales usando el método iterativo de Gauss-Seidel, con visualización paso a paso del proceso de solución.
+Una aplicación Python con interfaz gráfica moderna que implementa el **método iterativo de Gauss-Seidel** para resolver sistemas de ecuaciones lineales de la forma **Ax = b**, con visualización paso a paso del proceso iterativo completo y optimización automática de matrices.
 
 **Desarrollado por:**
-- Andrés Monsivais Salazar
-- Luis Andrés Salinas Lozano
+- **Andrés Monsivais Salazar**
+- **Luis Andrés Salinas Lozano**
 
 ## ✨ Características
 
@@ -250,4 +250,19 @@ Si encuentras algún problema:
 
 ---
 
-**¡Disfruta resolviendo sistemas de ecuaciones lineales de manera visual e interactiva! 🚀**
+## 🔧 Actualizaciones Recientes
+
+### Versión Actual - Septiembre 2025
+- **✅ Corrección de errores críticos** en la visualización
+- **🎨 Mejora de la interfaz** con mejor manejo de errores
+- **📊 Optimización de performance** para sistemas grandes
+- **🛡️ Validación robusta** mejorada
+- **📚 Documentación completamente actualizada**
+
+---
+
+**¡Explora el método de Gauss-Seidel de manera visual, interactiva y educativa! 🚀**
+
+*Desarrollado con ❤️ para la educación en métodos numéricos*
+
+**Última actualización: Septiembre 2025**
