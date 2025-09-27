@@ -2,6 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 import math
+import traceback
 
 from .components import (
     ModernButton, ModernEntry, FunctionInputPanel,
@@ -347,11 +348,35 @@ class BiseccionApp(ctk.CTk):
             f_xl = validation['f_xl']
             f_xu = validation['f_xu']
             
+            # Calcular producto con validación
+            try:
+                if isinstance(f_xl, (int, float)) and isinstance(f_xu, (int, float)) \
+                   and math.isfinite(f_xl) and math.isfinite(f_xu):
+                    product = f_xl * f_xu
+                    product_text = f"{product:.6f}"
+                else:
+                    product = None
+                    product_text = "indefinido"
+            except (TypeError, ValueError):
+                product = None
+                product_text = "indefinido"
+            
+            # Formatear valores de función de manera segura
+            try:
+                f_xl_text = f"{f_xl:.6f}"
+            except (TypeError, ValueError):
+                f_xl_text = str(f_xl)
+            
+            try:
+                f_xu_text = f"{f_xu:.6f}"
+            except (TypeError, ValueError):
+                f_xu_text = str(f_xu)
+            
             success_msg = (
                 f"Validación exitosa:\n\n"
-                f"f({xl}) = {f_xl:.6f}\n"
-                f"f({xu}) = {f_xu:.6f}\n"
-                f"f(xl) × f(xu) = {f_xl * f_xu:.6f} < 0 ✓\n\n"
+                f"f({xl}) = {f_xl_text}\n"
+                f"f({xu}) = {f_xu_text}\n"
+                f"f(xl) × f(xu) = {product_text} < 0 ✓\n\n"
                 f"Se garantiza la existencia de al menos una raíz en [{xl}, {xu}]"
             )
 
@@ -396,8 +421,15 @@ class BiseccionApp(ctk.CTk):
             self.solve_button.configure(text="Resolviendo...", state="disabled")
             self.update_idletasks()
 
-            # Generar pasos detallados del proceso
-            steps_data = self.solver.generate_step_by_step(function_expr, xl, xu)
+            # Generar pasos detallados del proceso (con traza)
+            try:
+                steps_data = self.solver.generate_step_by_step(function_expr, xl, xu)
+            except Exception as e:
+                tb = traceback.format_exc()
+                error_msg = f"Fallo generando pasos: {e}\n\n{tb}"
+                self.update_status(error_msg, is_error=True)
+                messagebox.showerror("Error de Resolución", error_msg)
+                return
 
             # Verificar si hubo errores en el proceso
             if steps_data and steps_data[0].get('type') == 'error':
@@ -406,28 +438,51 @@ class BiseccionApp(ctk.CTk):
                 messagebox.showerror("Error en el Proceso", error_msg)
                 return
 
-            # Actualizar panel de visualización con los resultados
-            self.visualization_panel.update_visualization(steps_data)
+            # Actualizar panel de visualización con los resultados (con traza)
+            try:
+                self.visualization_panel.update_visualization(steps_data)
+            except Exception as e:
+                tb = traceback.format_exc()
+                error_msg = f"Fallo actualizando visualización: {e}\n\n{tb}"
+                self.update_status(error_msg, is_error=True)
+                messagebox.showerror("Error de Resolución", error_msg)
+                return
 
             # Cambiar a la pestaña de solución para mostrar resultados
             self.main_notebook.set("Proceso de Solución")
 
             # Actualizar status basado en el resultado
-            result_step = next((step for step in steps_data if step.get('type') == 'result'), None)
-            if result_step:
-                if result_step.get('converged'):
-                    root = result_step.get('solution')
-                    iterations = result_step.get('iterations')
-                    self.update_status(f"Ecuación resuelta: raíz ≈ {root:.6f} en {iterations} iteraciones")
+            try:
+                result_step = next((step for step in steps_data if step.get('type') == 'result'), None)
+                if result_step:
+                    if result_step.get('converged'):
+                        root = result_step.get('solution')
+                        iterations = result_step.get('iterations')
+                        self.update_status(f"Ecuación resuelta: raíz ≈ {root:.6f} en {iterations} iteraciones")
+                    else:
+                        self.update_status("Proceso completado (convergencia no alcanzada)", is_warning=True)
                 else:
-                    self.update_status("Proceso completado (convergencia no alcanzada)", is_warning=True)
-            else:
-                self.update_status("Proceso completado")
+                    self.update_status("Proceso completado")
+            except Exception as e:
+                tb = traceback.format_exc()
+                error_msg = f"Fallo mostrando resultado: {e}\n\n{tb}"
+                self.update_status(error_msg, is_error=True)
+                messagebox.showerror("Error de Resolución", error_msg)
+                return
 
         except ValueError as e:
             error_msg = str(e)
             self.update_status(f"Error: {error_msg}", is_error=True)
-            messagebox.showerror("Error de Resolución", f"Error en la evaluación de la función:\n\n{error_msg}\n\nVerifica que:\n• La función esté bien escrita\n• No haya divisiones por cero\n• No haya logaritmos de números negativos\n• El intervalo sea apropiado")
+            messagebox.showerror(
+                "Error de Resolución",
+                f"Error en la evaluación de la función:\n\n{error_msg}\n\n"
+                f"Sugerencias:\n"
+                f"• Revisa divisiones por cero (ej. 1/(x-a))\n"
+                f"• Evita logaritmos de negativos (log(x) con x<=0)\n"
+                f"• Evita sqrt() de negativos\n"
+                f"• Asegúrate de que f(x) regrese un número en todo el intervalo"
+            )
+        # Eliminamos captura especial de TypeError para no enmascarar mensajes reales
         except Exception as e:
             error_msg = f"Error inesperado: {str(e)}"
             self.update_status(error_msg, is_error=True)

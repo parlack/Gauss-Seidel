@@ -455,7 +455,7 @@ class VisualizationPanel(ctk.CTkFrame):
     def update_visualization(self, steps_data: List):
         """Actualiza la visualización con nuevos datos"""
         self.steps_data = steps_data
-        self.total_iterations = len([s for s in steps_data if s['type'] == 'iteration'])
+        self.total_iterations = len([s for s in steps_data if s.get('type') == 'iteration'])
         self.current_iteration = 0
         self.update_current_step()
         self.update_result_display()
@@ -466,7 +466,7 @@ class VisualizationPanel(ctk.CTkFrame):
             return
         
         # Encontrar pasos de iteración
-        iteration_steps = [s for s in self.steps_data if s['type'] == 'iteration']
+        iteration_steps = [s for s in self.steps_data if s.get('type') == 'iteration']
         
         if self.current_iteration < len(iteration_steps):
             step = iteration_steps[self.current_iteration]
@@ -476,9 +476,15 @@ class VisualizationPanel(ctk.CTkFrame):
                 text=f"Iteración: {self.current_iteration + 1} / {len(iteration_steps)}"
             )
             
-            self.error_label.configure(
-                text=f"Error: {step['error_percent']:.6f}%"
-            )
+            error_percent = step.get('error_percent', 0)
+            try:
+                err_val = float(error_percent)
+                if math.isfinite(err_val):
+                    self.error_label.configure(text=f"Error: {err_val:.6f}%")
+                else:
+                    self.error_label.configure(text=f"Error: {error_percent}")
+            except Exception:
+                self.error_label.configure(text=f"Error: {error_percent}")
             
             # Actualizar barra de progreso
             progress = (self.current_iteration + 1) / len(iteration_steps)
@@ -508,9 +514,16 @@ class VisualizationPanel(ctk.CTkFrame):
         )
         title_label.pack(side="left")
         
+        # Crear badge de error con protección ante valores no numéricos
+        try:
+            err_val = float(step.get('error_percent', 0))
+            err_text = f"Error: {err_val:.8f}%"
+        except Exception:
+            err_text = f"Error: {step.get('error_percent')}%"
+
         error_badge = ctk.CTkLabel(
             title_frame,
-            text=f"Error: {step['error_percent']:.6f}%",
+            text=err_text,
             font=ctk.CTkFont(size=12, weight="bold"),
             corner_radius=15,
             fg_color=("gray80", "gray20"),
@@ -538,12 +551,14 @@ class VisualizationPanel(ctk.CTkFrame):
         values_grid = ctk.CTkFrame(interval_section)
         values_grid.pack(fill="x", padx=20, pady=(0, 15))
         
-        # Crear columnas para xl, xr, xu
-        for i, (label, value, f_value) in enumerate([
-            ("xl", step['xl'], step['f_xl']),
-            ("xr", step['xr'], step['f_xr']),
-            ("xu", step['xu'], step['f_xu'])
-        ]):
+        # Crear columnas para xl, xr, xu con validación
+        values_data = [
+            ("xl", step.get('xl', 0), step.get('f_xl', 0)),
+            ("xr", step.get('xr', 0), step.get('f_xr', 0)),
+            ("xu", step.get('xu', 0), step.get('f_xu', 0))
+        ]
+        
+        for i, (label, value, f_value) in enumerate(values_data):
             col_frame = ctk.CTkFrame(values_grid)
             col_frame.grid(row=0, column=i, padx=5, pady=10, sticky="ew")
             
@@ -556,10 +571,15 @@ class VisualizationPanel(ctk.CTkFrame):
             )
             var_label.pack(pady=(10, 2))
             
-            # Variable value
+            # Variable value con validación
+            if isinstance(value, (int, float)) and math.isfinite(value):
+                val_text = f"{value:.6f}"
+            else:
+                val_text = str(value)
+                
             val_label = ctk.CTkLabel(
                 col_frame,
-                text=f"{value:.6f}",
+                text=val_text,
                 font=ctk.CTkFont(size=14)
             )
             val_label.pack(pady=2)
@@ -604,10 +624,13 @@ class VisualizationPanel(ctk.CTkFrame):
         f_xr = step.get('f_xr', 0)
         
         # Verificar que los valores sean válidos para mostrar
-        if all(isinstance(val, (int, float)) and math.isfinite(val) for val in [f_xl, f_xr, product_value]):
-            product_text = f"f(xl) × f(xr) = {f_xl:.6f} × {f_xr:.6f} = {product_value:.6f}"
-        else:
-            product_text = f"f(xl) × f(xr) = {f_xl} × {f_xr} = {product_value}"
+        try:
+            if all(isinstance(val, (int, float)) and math.isfinite(val) for val in [f_xl, f_xr, product_value]):
+                product_text = f"f(xl) × f(xr) = {f_xl:.6f} × {f_xr:.6f} = {product_value:.6f}"
+            else:
+                product_text = f"f(xl) × f(xr) = {f_xl} × {f_xr} = {product_value}"
+        except Exception:
+            product_text = "f(xl) × f(xr) = (valores no disponibles)"
         
         product_label = ctk.CTkLabel(
             product_frame,
@@ -716,13 +739,15 @@ class VisualizationPanel(ctk.CTkFrame):
             ).pack(pady=(10, 2))
             
             color = "green" if i == 0 and result_step['converged'] else "#1f538d"
-            ctk.CTkLabel(
-                stat_frame,
-                text=value,
-                font=ctk.CTkFont(size=14, weight="bold") if i < 3 else ctk.CTkFont(size=12),
-                text_color=color,
-                wraplength=200 if i == 3 else None
-            ).pack(pady=(2, 10))
+            # Construir kwargs sin pasar wraplength=None (customtkinter no lo acepta)
+            label_kwargs = {
+                'text': value,
+                'font': ctk.CTkFont(size=14, weight="bold") if i < 3 else ctk.CTkFont(size=12),
+                'text_color': color,
+            }
+            if i == 3:
+                label_kwargs['wraplength'] = 200
+            ctk.CTkLabel(stat_frame, **label_kwargs).pack(pady=(2, 10))
         
         # Configurar grid
         self.stats_grid.grid_columnconfigure(0, weight=1)
@@ -789,7 +814,7 @@ class VisualizationPanel(ctk.CTkFrame):
     
     def update_navigation_buttons(self):
         """Actualiza el estado de los botones de navegación"""
-        iteration_steps = [s for s in self.steps_data if s['type'] == 'iteration']
+        iteration_steps = [s for s in self.steps_data if s.get('type') == 'iteration']
         total = len(iteration_steps)
         current = self.current_iteration
         
@@ -813,7 +838,7 @@ class VisualizationPanel(ctk.CTkFrame):
     
     def last_iteration(self):
         """Ir a la última iteración"""
-        iteration_steps = [s for s in self.steps_data if s['type'] == 'iteration']
+        iteration_steps = [s for s in self.steps_data if s.get('type') == 'iteration']
         if self.current_iteration < len(iteration_steps) - 1:
             self.current_iteration = len(iteration_steps) - 1
             self.update_current_step()
@@ -826,7 +851,7 @@ class VisualizationPanel(ctk.CTkFrame):
     
     def next_iteration(self):
         """Ir a la siguiente iteración"""
-        iteration_steps = [s for s in self.steps_data if s['type'] == 'iteration']
+        iteration_steps = [s for s in self.steps_data if s.get('type') == 'iteration']
         if self.current_iteration < len(iteration_steps) - 1:
             self.current_iteration += 1
             self.update_current_step()

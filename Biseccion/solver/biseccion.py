@@ -43,8 +43,11 @@ class BiseccionSolver:
         f_xu = func(xu)
 
         # Verificar que la función tenga signos opuestos en los extremos
-        if f_xl * f_xu > 0:
-            raise ValueError("f(xl) y f(xu) deben tener signos opuestos")
+        try:
+            if f_xl is not None and f_xu is not None and f_xl * f_xu > 0:
+                raise ValueError("f(xl) y f(xu) deben tener signos opuestos")
+        except TypeError:
+            raise ValueError("Error en evaluación de función en extremos del intervalo")
 
         # Limpiar historiales de iteraciones anteriores
         self.iteration_history = []
@@ -84,15 +87,22 @@ class BiseccionSolver:
 
             # Calcular error relativo si no es la primera iteración
             error = 0.0
-            if xr_prev is not None and xr != 0:
-                error = abs((xr - xr_prev) / xr) * 100
+            if xr_prev is not None and xr != 0 and isinstance(xr, (int, float)) and isinstance(xr_prev, (int, float)):
+                try:
+                    error = abs((xr - xr_prev) / xr) * 100
+                except (TypeError, ZeroDivisionError):
+                    error = 0.0
 
-            # Calcular producto con validación adicional
+            # Calcular producto con validación adicional (protegido contra TypeError)
             try:
                 if all(isinstance(val, (int, float)) and math.isfinite(val) for val in [f_xl, f_xr]):
-                    f_xl_times_f_xr = f_xl * f_xr
+                    f_xl_times_f_xr = float(f_xl) * float(f_xr)
                 else:
                     raise ValueError("Valores no válidos para calcular producto")
+            except TypeError as e:
+                raise ValueError(
+                    f"Operación inválida al calcular f(xl)×f(xr) en la iteración {iteration+1}: {e}"
+                )
             except Exception as e:
                 raise ValueError(f"Error calculando f(xl) × f(xr): {str(e)}")
             
@@ -154,7 +164,14 @@ class BiseccionSolver:
 
         # Si no convergió en max_iterations, retornar último resultado
         final_xr = (xl_curr + xu_curr) / 2.0
-        final_error = abs((final_xr - xr_prev) / final_xr) * 100 if xr_prev is not None and final_xr != 0 else 0
+        # Calcular error final de manera segura
+        final_error = 0.0
+        if (xr_prev is not None and final_xr != 0 and 
+            isinstance(final_xr, (int, float)) and isinstance(xr_prev, (int, float))):
+            try:
+                final_error = abs((final_xr - xr_prev) / final_xr) * 100
+            except (TypeError, ZeroDivisionError):
+                final_error = 0.0
 
         return {
             'solution': final_xr,
@@ -175,23 +192,37 @@ class BiseccionSolver:
         Returns:
             función que puede ser evaluada
         """
-        # Reemplazar funciones matemáticas comunes
-        expression = expression.replace('^', '**')
-        expression = expression.replace('sen', 'sin')
-        expression = expression.replace('cos', 'cos')
-        expression = expression.replace('tan', 'tan')
-        expression = expression.replace('ln', 'log')
-        expression = expression.replace('log10', 'log10')
-        expression = expression.replace('sqrt', 'sqrt')
-        expression = expression.replace('exp', 'exp')
-        expression = expression.replace('pi', 'pi')
-        expression = expression.replace('e', 'e')
+        # Normalizar la expresión de forma segura
+        # Reemplazos ordenados por prioridad para evitar conflictos
+        replacements = {
+            '^': '**',
+            'sen(': 'sin(',
+            'cos(': 'cos(',
+            'tan(': 'tan(',
+            'ln(': 'log(',
+            'log10(': 'log10(',
+            'sqrt(': 'sqrt(',
+            'exp(': 'exp(',
+        }
+        for src, dst in replacements.items():
+            expression = expression.replace(src, dst)
 
         def func(x):
             """Función generada dinámicamente"""
+            # Validar que x sea un número válido
+            if x is None:
+                raise ValueError("El valor de x no puede ser None")
+            if not isinstance(x, (int, float)):
+                try:
+                    x = float(x)
+                except:
+                    raise ValueError(f"El valor de x debe ser numérico, recibido: {type(x)}")
+            if not math.isfinite(x):
+                raise ValueError(f"El valor de x debe ser finito, recibido: {x}")
+            
             # Namespace con funciones matemáticas y variables
             namespace = {
-                'x': x,
+                'x': float(x),
                 'sin': math.sin,
                 'cos': math.cos,
                 'tan': math.tan,
@@ -202,21 +233,45 @@ class BiseccionSolver:
                 'pi': math.pi,
                 'e': math.e,
                 'abs': abs,
-                'pow': pow
+                'pow': pow,
+                'asin': math.asin,
+                'acos': math.acos,
+                'atan': math.atan,
+                'sinh': math.sinh,
+                'cosh': math.cosh,
+                'tanh': math.tanh,
             }
             
             try:
+                # Validar que la expresión no esté vacía
+                if not expression or not expression.strip():
+                    raise ValueError("La expresión no puede estar vacía")
+                
                 result = eval(expression, {"__builtins__": {}}, namespace)
+                
                 # Verificar que el resultado sea un número válido
                 if result is None:
-                    raise ValueError(f"La función retornó None para x = {x}")
+                    raise ValueError(f"La función retornó None para x = {x}. Verifica la expresión: '{expression}'")
+                
                 if not isinstance(result, (int, float)):
-                    raise ValueError(f"La función retornó un tipo inválido: {type(result)}")
+                    # Intentar convertir a float (por ejemplo numpy.float64)
+                    try:
+                        result = float(result)
+                    except Exception:
+                        raise ValueError(f"La función retornó un tipo inválido: {type(result)} para x = {x}")
+                
                 if not math.isfinite(result):
-                    raise ValueError(f"La función retornó un valor no finito: {result}")
-                return result
+                    raise ValueError(f"La función retornó un valor no finito: {result} para x = {x}")
+                
+                return float(result)
+                
+            except ZeroDivisionError:
+                raise ValueError(f"División por cero en x = {x}. Verifica la función para evitar divisiones por cero.")
+            except ValueError as ve:
+                # Re-lanzar errores de ValueError ya manejados
+                raise ve
             except Exception as e:
-                raise ValueError(f"Error evaluando función en x = {x}: {str(e)}")
+                raise ValueError(f"Error evaluando función en x = {x}: {str(e)}\nExpresión: '{expression}'")
         
         return func
 
@@ -242,10 +297,19 @@ class BiseccionSolver:
                 }
             
             # Verificar signos opuestos
-            if f_xl * f_xu > 0:
+            try:
+                product = f_xl * f_xu if f_xl is not None and f_xu is not None else None
+                if product is not None and product > 0:
+                    return {
+                        'valid': False,
+                        'message': 'f(xl) y f(xu) deben tener signos opuestos para garantizar una raíz',
+                        'f_xl': f_xl,
+                        'f_xu': f_xu
+                    }
+            except TypeError:
                 return {
                     'valid': False,
-                    'message': 'f(xl) y f(xu) deben tener signos opuestos para garantizar una raíz',
+                    'message': 'Error en evaluación de función en extremos del intervalo',
                     'f_xl': f_xl,
                     'f_xu': f_xu
                 }
@@ -281,7 +345,7 @@ class BiseccionSolver:
         try:
             # Crear función desde expresión
             func = self.create_function_from_expression(func_expression)
-            
+
             # Validar función e intervalo
             validation = self.validate_function_and_interval(func, xl, xu)
             if not validation['valid']:
@@ -292,8 +356,9 @@ class BiseccionSolver:
                     'f_xl': validation.get('f_xl'),
                     'f_xu': validation.get('f_xu')
                 }]
-            
-            # Resolver usando bisección
+
+            # Resolver usando bisección (con manejo explícito de TypeError)
+            # Ejecutar solución (si algo falla, se propagará como ValueError por las validaciones previas)
             result = self.solve(func, xl, xu)
             steps = []
 

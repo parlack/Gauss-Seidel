@@ -117,7 +117,14 @@ class FunctionValidator:
             f_xl = func(xl)
             f_xu = func(xu)
             
-            # Verificar que los valores sean finitos
+            # Verificar que los valores no sean None y sean finitos
+            if f_xl is None or f_xu is None:
+                return False, "La función no está definida en uno o ambos extremos del intervalo", {
+                    'f_xl': f_xl,
+                    'f_xu': f_xu,
+                    'product': None
+                }
+                
             if not (math.isfinite(f_xl) and math.isfinite(f_xu)):
                 return False, "La función no está definida en uno o ambos extremos del intervalo", {
                     'f_xl': f_xl,
@@ -126,16 +133,23 @@ class FunctionValidator:
                 }
             
             # Verificar signos opuestos
-            product = f_xl * f_xu
+            try:
+                product = f_xl * f_xu if f_xl is not None and f_xu is not None else None
+            except TypeError:
+                return False, "Error en evaluación de función en extremos del intervalo", {
+                    'f_xl': f_xl,
+                    'f_xu': f_xu,
+                    'product': None
+                }
             
-            if product > 0:
+            if product is not None and product > 0:
                 return False, "f(xl) y f(xu) deben tener signos opuestos", {
                     'f_xl': f_xl,
                     'f_xu': f_xu,
                     'product': product
                 }
             
-            if product == 0:
+            if product is not None and product == 0:
                 if f_xl == 0:
                     return True, f"Raíz exacta encontrada en xl = {xl}", {
                         'f_xl': f_xl,
@@ -243,7 +257,7 @@ class FunctionValidator:
                 x1, y1 = points[i]
                 x2, y2 = points[i + 1]
                 
-                if y1 * y2 < 0:  # Cambio de signo
+                if y1 is not None and y2 is not None and y1 * y2 < 0:  # Cambio de signo
                     intervals.append({
                         'xl': x1,
                         'xu': x2,
