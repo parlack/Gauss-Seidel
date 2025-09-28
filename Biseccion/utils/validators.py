@@ -3,24 +3,10 @@ from typing import Tuple, Dict, Callable
 
 
 class FunctionValidator:
-    """
-    Validador para funciones matemáticas y parámetros del método de bisección
-    
-    Proporciona métodos estáticos para validar que las funciones y intervalos
-    sean apropiados para el método de bisección
-    """
-    
+    #Validador para funciones matemáticas y parámetros del método de bisección
     @staticmethod
     def validate_function_expression(expression: str) -> Tuple[bool, str]:
-        """
-        Valida que una expresión matemática sea válida y segura
-        
-        Args:
-            expression: expresión matemática como string
-            
-        Returns:
-            tupla (es_valida, mensaje_error)
-        """
+        #Valida que una expresión matemática sea válida y segura
         if not expression or not expression.strip():
             return False, "La expresión no puede estar vacía"
         
@@ -71,16 +57,8 @@ class FunctionValidator:
     
     @staticmethod
     def validate_interval(xl: float, xu: float) -> Tuple[bool, str]:
-        """
-        Valida que un intervalo sea apropiado para bisección
-        
-        Args:
-            xl: límite inferior
-            xu: límite superior
-            
-        Returns:
-            tupla (es_valido, mensaje_error)
-        """
+        #Valida que un intervalo sea apropiado para bisección
+
         # Verificar que sean números finitos
         if not (math.isfinite(xl) and math.isfinite(xu)):
             return False, "Los límites del intervalo deben ser números finitos"
@@ -101,17 +79,8 @@ class FunctionValidator:
     
     @staticmethod
     def validate_function_in_interval(func: Callable[[float], float], xl: float, xu: float) -> Tuple[bool, str, Dict]:
-        """
-        Valida que una función sea apropiada para bisección en un intervalo dado
-        
-        Args:
-            func: función a validar
-            xl: límite inferior
-            xu: límite superior
-            
-        Returns:
-            tupla (es_valido, mensaje, datos_adicionales)
-        """
+      #Valida que una función sea apropiada para bisección en un intervalo dado
+
         try:
             # Evaluar función en los extremos
             f_xl = func(xl)
@@ -181,16 +150,6 @@ class FunctionValidator:
     
     @staticmethod
     def validate_solver_parameters(tolerance: float, max_iterations: int) -> Tuple[bool, str]:
-        """
-        Valida los parámetros del solver de bisección
-        
-        Args:
-            tolerance: tolerancia para convergencia
-            max_iterations: máximo número de iteraciones
-            
-        Returns:
-            tupla (son_validos, mensaje_error)
-        """
         # Validar tolerancia
         if not math.isfinite(tolerance) or tolerance <= 0:
             return False, "La tolerancia debe ser un número positivo"
@@ -213,18 +172,6 @@ class FunctionValidator:
     @staticmethod
     def suggest_better_interval(func: Callable[[float], float], initial_xl: float, initial_xu: float, 
                                num_points: int = 20) -> Dict:
-        """
-        Sugiere un mejor intervalo si el actual no es válido para bisección
-        
-        Args:
-            func: función a analizar
-            initial_xl: límite inferior inicial
-            initial_xu: límite superior inicial
-            num_points: número de puntos a evaluar
-            
-        Returns:
-            diccionario con sugerencias
-        """
         try:
             # Expandir el intervalo inicial
             expanded_xl = initial_xl - abs(initial_xu - initial_xl)

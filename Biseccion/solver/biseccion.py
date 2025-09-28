@@ -4,13 +4,6 @@ from typing import List, Dict, Callable
 
 
 class BiseccionSolver:
-    """
-    Resolutor de ecuaciones no lineales usando el método de bisección
-    con visualización paso a paso del proceso iterativo.
-
-    El método de bisección encuentra las raíces de una función continua
-    f(x) = 0 en un intervalo [xl, xu] donde f(xl) * f(xu) < 0.
-    """
 
     def __init__(self):
         # Historial de todas las iteraciones del proceso
@@ -23,17 +16,6 @@ class BiseccionSolver:
         self.tolerance = 0.000001
 
     def solve(self, func: Callable[[float], float], xl: float, xu: float) -> Dict:
-        """
-        Resuelve la ecuación f(x) = 0 usando bisección
-
-        Args:
-            func: función f(x) a resolver
-            xl: límite inferior del intervalo
-            xu: límite superior del intervalo
-
-        Returns:
-            dict con solución, iteraciones, convergencia y errores
-        """
         # Verificar que el intervalo sea válido
         if xl >= xu:
             raise ValueError("El límite inferior debe ser menor que el superior")
@@ -183,15 +165,6 @@ class BiseccionSolver:
         }
 
     def create_function_from_expression(self, expression: str) -> Callable[[float], float]:
-        """
-        Crea una función evaluable desde una expresión matemática string
-        
-        Args:
-            expression: expresión matemática como string (ej: "x**3 - 2*x - 5")
-            
-        Returns:
-            función que puede ser evaluada
-        """
         # Normalizar la expresión de forma segura
         # Reemplazos ordenados por prioridad para evitar conflictos
         replacements = {
@@ -276,12 +249,6 @@ class BiseccionSolver:
         return func
 
     def validate_function_and_interval(self, func: Callable[[float], float], xl: float, xu: float) -> Dict:
-        """
-        Valida que la función y el intervalo sean apropiados para bisección
-        
-        Returns:
-            dict con información de validación
-        """
         try:
             # Evaluar función en los extremos
             f_xl = func(xl)
@@ -339,9 +306,6 @@ class BiseccionSolver:
             }
 
     def generate_step_by_step(self, func_expression: str, xl: float, xu: float) -> List[Dict]:
-        """
-        Genera explicación paso a paso del método de bisección
-        """
         try:
             # Crear función desde expresión
             func = self.create_function_from_expression(func_expression)

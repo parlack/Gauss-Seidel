@@ -5,12 +5,6 @@ import math
 
 
 class ModernButton(ctk.CTkButton):
-    """
-    Botón personalizado
-    
-    Extiende CTkButton con estilos predefinidos
-    incluye configuraciones de esquinas redondeadas, fuentes y dimensiones
-    """
     def __init__(self, parent, text, command=None, **kwargs):
         # Configuración por defecto para botones modernos
         default_kwargs = {
@@ -24,12 +18,6 @@ class ModernButton(ctk.CTkButton):
 
 
 class ModernEntry(ctk.CTkEntry):
-    """
-    Campo de entrada
-    
-    Extiende CTkEntry con estilos predefinidos para campos de entrada
-    incluye placeholder text y configuración de fuentes
-    """
     def __init__(self, parent, placeholder="", **kwargs):
         # Configuración por defecto para campos de entrada
         default_kwargs = {
