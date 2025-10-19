@@ -14,10 +14,6 @@ from solver.biseccion import BiseccionSolver
 class BiseccionApp(ctk.CTk):
     """
     Aplicación principal para resolver ecuaciones con bisección
-
-    Interfaz gráfica principal que integra todos los componentes
-    para resolver ecuaciones no lineales usando el método
-    de bisección con visualización paso a paso
     """
 
     def __init__(self):
