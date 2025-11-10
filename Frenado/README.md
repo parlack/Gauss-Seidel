@@ -50,8 +50,9 @@ Imagina estas situaciones cotidianas:
 ### 🔍 Método de Bisección
 - Encuentra la velocidad máxima segura dado un límite de distancia
 - Algoritmo iterativo con convergencia garantizada
-- Muestra cada iteración del proceso de refinamiento
-- Precisión ajustable mediante tolerancia
+- **Integración completa con Lagrange**: Muestra el cálculo de interpolación en cada iteración
+- Precisión ajustable mediante tolerancia configurable (campo de entrada)
+- Visualización detallada de cómo ambos métodos trabajan juntos
 
 ### 📈 Visualización Paso a Paso
 - Cards visuales modernas para cada paso
@@ -146,21 +147,28 @@ Resultado: Aproximadamente 42.5 metros
 1. Ve a la pestaña **"⚠️ Bisección (Velocidad Segura)"**
 2. Ingresa los parámetros:
    - **Distancia máxima disponible**: ej. **50 metros**
+   - **Tolerancia / Margen de error**: ej. **0.01 km/h** (por defecto)
    - **Intervalo de búsqueda**: 
      - Velocidad mínima: ej. **20 km/h**
      - Velocidad máxima: ej. **150 km/h**
 3. Haz clic en **"🚗 Calcular Velocidad Máxima Segura"**
 4. La aplicación te mostrará:
-   - Proceso iterativo de bisección
-   - Refinamiento del intervalo en cada paso
+   - **Integración completa de ambos métodos**: En cada iteración de Bisección verás el cálculo paso a paso de Lagrange
+   - Proceso iterativo de bisección con refinamiento del intervalo
    - Velocidad máxima segura (ej: **82.3 km/h**)
 
 **Ejemplo Real:**
 ```
 Pregunta: Hay un cruce peatonal a 50 metros. ¿A qué velocidad máxima puedo ir?
-Método: Bisección sobre función de distancia interpolada
+Método: Bisección sobre función de distancia interpolada con Lagrange
 Resultado: Máximo 82.3 km/h para frenar dentro de 50 metros
 ```
+
+**✨ Característica Especial:**
+La visualización paso a paso muestra cómo **Lagrange y Bisección trabajan juntos**:
+- Para cada iteración de Bisección, verás el cálculo completo de Lagrange
+- Esto demuestra cómo un método numérico (Lagrange) alimenta a otro (Bisección)
+- Es una excelente herramienta educativa para entender la integración de métodos
 
 ---
 
@@ -181,6 +189,66 @@ Resultado: Máximo 82.3 km/h para frenar dentro de 50 metros
 ---
 
 ## 🔬 Fundamentos Matemáticos
+
+### 🔗 Integración de Ambos Métodos
+
+**Lo que hace única a esta aplicación** es cómo integra dos métodos numéricos para resolver un problema complejo:
+
+**Flujo de Trabajo:**
+```
+Datos Experimentales
+        ↓
+[Interpolación de Lagrange]
+        ↓
+Función Continua d(v)
+        ↓
+[Método de Bisección]
+        ↓
+Velocidad Máxima Segura
+```
+
+**¿Cómo trabajan juntos?**
+
+1. **Lagrange construye la función**: A partir de mediciones discretas (ej: 6 puntos), crea una función continua d(v) que predice la distancia de frenado para cualquier velocidad.
+
+2. **Bisección usa esa función**: Para encontrar la velocidad donde d(v) = distancia_límite, evalúa repetidamente la función de Lagrange en diferentes puntos.
+
+3. **Visualización integrada**: En cada iteración de Bisección, la aplicación muestra:
+   - Cómo se calcula d(v) usando Lagrange para ese punto específico
+   - Cómo Bisección usa ese resultado para refinar su búsqueda
+   - La convergencia hacia la solución final
+
+**Ejemplo Práctico:**
+
+```
+Objetivo: Encontrar velocidad máxima para frenar en 50m
+
+Iteración 1 de Bisección:
+  → Probar punto medio: v = 70 km/h
+  → Calcular d(70) usando Lagrange:
+     • L₀(70) × 9.0 + L₁(70) × 24.0 + ... = 62.20 metros
+  → f(70) = 62.20 - 50 = +12.20 (muy rápido)
+  → Ajustar intervalo: buscar en [20, 70]
+
+Iteración 2 de Bisección:
+  → Probar punto medio: v = 45 km/h
+  → Calcular d(45) usando Lagrange:
+     • L₀(45) × 9.0 + L₁(45) × 24.0 + ... = 31.50 metros
+  → f(45) = 31.50 - 50 = -18.50 (muy lento)
+  → Ajustar intervalo: buscar en [45, 70]
+
+... continúa hasta convergencia ...
+
+Resultado: v_máx ≈ 58.7 km/h
+```
+
+**Ventajas de esta Integración:**
+- ✅ **Flexibilidad**: Funciona con cualquier conjunto de datos experimentales
+- ✅ **Precisión**: Lagrange interpola suavemente, Bisección converge garantizadamente
+- ✅ **Educativo**: Muestra cómo los métodos numéricos se complementan
+- ✅ **Práctico**: Resuelve un problema real de seguridad vial
+
+---
 
 ### Método de Interpolación de Lagrange
 
@@ -425,9 +493,12 @@ La aplicación valida automáticamente:
 - Más preciso dentro del rango de medición
 
 **Bisección:**
-- Tolerancia por defecto: 0.001 km/h
+- Tolerancia configurable por el usuario (por defecto: **0.01 km/h**)
+- Puedes ajustar la precisión según tus necesidades:
+  - **0.1 km/h**: Rápido, suficiente para uso general
+  - **0.01 km/h**: Balance entre precisión y velocidad (recomendado)
+  - **0.001 km/h**: Máxima precisión, más iteraciones
 - Máximo de iteraciones: 100
-- Error típico: < 0.01 km/h
 - Convergencia garantizada
 
 ---
@@ -614,6 +685,44 @@ Esta aplicación es ideal para aprender:
 
 ## 🌟 Características Avanzadas
 
+### 🎯 Innovación: Visualización Integrada de Métodos
+
+**Característica única de esta aplicación:**
+
+Cuando ejecutas el método de Bisección, no solo ves las iteraciones de bisección, sino que **para cada iteración, la aplicación genera y muestra el cálculo completo de Lagrange** para ese punto específico.
+
+**Flujo de visualización:**
+```
+1. Problema inicial y contexto
+2. Explicación del método de Bisección
+3. ITERACIÓN 1:
+   3.1. Calcular d(70.0) con Lagrange
+       - Datos experimentales (solo en primera iteración)
+       - Método de Lagrange (solo en primera iteración)
+       - Cálculo de L₀(70), L₁(70), L₂(70)...
+       - Suma ponderada
+       - Resultado: d(70.0) = 62.20 metros
+   3.2. Resultado de Bisección iteración 1
+       - Intervalo actual
+       - Evaluación de f(v) = d(v) - límite
+       - Decisión de qué subintervalo usar
+4. ITERACIÓN 2:
+   4.1. Calcular d(45.0) con Lagrange
+       - Cálculo de L₀(45), L₁(45), L₂(45)...
+       - Suma ponderada
+       - Resultado: d(45.0) = 31.50 metros
+   4.2. Resultado de Bisección iteración 2
+       - Nuevo intervalo refinado
+       - Nueva evaluación
+... y así sucesivamente ...
+```
+
+**Ventajas educativas:**
+- ✅ Ves exactamente cómo un método (Lagrange) alimenta al otro (Bisección)
+- ✅ Entiendes que Bisección no "conoce" la fórmula de d(v), solo la evalúa
+- ✅ Observas cómo la misma fórmula de Lagrange se aplica a diferentes puntos
+- ✅ Comprendes la integración práctica de métodos numéricos
+
 ### Datos Realistas Incluidos
 
 Los datos de ejemplo están basados en mediciones reales:
@@ -756,4 +865,29 @@ Proporcionamos una herramienta educativa y práctica que cualquier persona puede
 *Desarrollado con ❤️ para la educación en métodos numéricos y seguridad vial*
 
 **Última actualización: Noviembre 2025**
+
+---
+
+## 📝 Registro de Cambios Recientes
+
+### Versión Actual
+
+**Nuevas Características:**
+- ✨ **Visualización integrada completa**: Ahora cada iteración de Bisección muestra el cálculo paso a paso de Lagrange
+- ⚙️ **Tolerancia configurable**: Campo de entrada para ajustar la precisión del método de Bisección
+- 🎯 **Optimización de visualización**: La explicación del método de Lagrange se muestra solo en la primera iteración
+- 📊 **Mejor flujo educativo**: Claridad en cómo ambos métodos trabajan juntos
+- 🚀 **Panel de Bisección con scroll**: Interfaz más accesible para todos los campos de entrada
+
+**Mejoras Técnicas:**
+- Parámetro `skip_method_explanation` en el solver de Lagrange
+- Integración dinámica de pasos de visualización
+- Propagación de contexto entre métodos
+- Validación mejorada de tolerancia
+
+**Documentación:**
+- README completamente actualizado con ejemplos de integración
+- Explicación detallada del flujo de trabajo entre métodos
+- Casos de uso prácticos ampliados
+- Sección de fundamentos matemáticos mejorada
 
