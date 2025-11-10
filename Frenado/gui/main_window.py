@@ -477,56 +477,100 @@ class FrenadoApp(ctk.CTk):
                 )
                 return
 
-            # PASO 1: Generar pasos de Lagrange (necesario para construir la función d(v))
-            self.update_status("Generando interpolación de Lagrange (requerida para bisección)...")
+            # PASO 1: Generar contexto inicial
+            self.update_status("Preparando visualización integrada de Lagrange y Bisección...")
             
-            # Usar el punto medio del intervalo como ejemplo de interpolación
-            v_ejemplo = (a_val + b_val) / 2
-            lagrange_steps = self.lagrange_solver.generate_step_by_step(v_ejemplo)
-            
-            # Agregar un paso explicativo de transición
-            transition_step = {
+            context_inicial = {
                 'type': 'context',
-                'title': 'Transición: De Lagrange a Bisección',
+                'title': 'Problema: Velocidad Máxima Segura',
                 'content': (
-                    f"Ya tenemos la función d(v) construida mediante Lagrange.\n\n"
-                    f"Ahora usaremos el método de Bisección para encontrar la velocidad v "
-                    f"tal que d(v) = {dist_limit:.1f} metros.\n\n"
-                    f"Es decir, resolveremos: f(v) = d(v) - {dist_limit:.1f} = 0"
-                ),
-                'data': {
-                    'Función objetivo': f"f(v) = d(v) - {dist_limit:.1f}",
-                    'Meta': f"Encontrar v donde f(v) = 0"
-                }
-            }
-
-            # PASO 2: Generar contexto para la visualización de bisección
-            context = {
-                'description': (
-                    f"Problema: Encontrar la velocidad máxima segura para poder frenar "
-                    f"dentro de {dist_limit:.1f} metros.\n\n"
-                    f"Método: Bisección sobre la función f(v) = d(v) - {dist_limit:.1f}, "
-                    f"donde d(v) es la distancia de frenado interpolada.\n\n"
-                    f"Buscamos v tal que d(v) = {dist_limit:.1f} metros."
+                    f"Encontrar la velocidad máxima segura para frenar dentro de {dist_limit:.1f} metros.\n\n"
+                    f"Estrategia:\n"
+                    f"1. Usar Lagrange para calcular d(v) en cada punto\n"
+                    f"2. Usar Bisección para encontrar v donde d(v) = {dist_limit:.1f}\n\n"
+                    f"En cada iteración verás el cálculo completo de Lagrange."
                 ),
                 'data': {
                     'Distancia disponible': f"{dist_limit:.1f} metros",
-                    'Intervalo de búsqueda': f"[{a_val:.1f}, {b_val:.1f}] km/h",
-                    'Tolerancia': f"{tol_val} km/h"
-                },
-                'dist_limit': dist_limit
+                    'Intervalo inicial': f"[{a_val:.1f}, {b_val:.1f}] km/h",
+                    'Tolerancia': f"{tol_val} km/h",
+                    'Función objetivo': f"f(v) = d(v) - {dist_limit:.1f} = 0"
+                }
             }
-
-            # PASO 3: Resolver usando bisección
+            
+            # PASO 2: Obtener historial de bisección
             self.update_status("Ejecutando método de bisección...")
-            biseccion_steps = self.biseccion_solver.generate_step_by_step(
-                f, a_val, b_val,
-                func_name="f(v) = d(v) - " + f"{dist_limit:.1f}",
-                context=context
-            )
-
-            # PASO 4: Combinar todos los pasos (Lagrange + Transición + Bisección)
-            all_steps = lagrange_steps + [transition_step] + biseccion_steps
+            result = self.biseccion_solver.solve(f, a_val, b_val)
+            
+            if not result['success']:
+                messagebox.showerror("Error", result['message'])
+                return
+            
+            # PASO 3: Construir pasos intercalando Lagrange y Bisección
+            all_steps = [context_inicial]
+            
+            # Agregar explicación del método de bisección
+            all_steps.append({
+                'type': 'method',
+                'title': 'Método de Bisección',
+                'content': ('El método de bisección encuentra la raíz de una función en un intervalo [a, b] '
+                           'dividiendo repetidamente el intervalo por la mitad y seleccionando el subintervalo '
+                           'donde la función cambia de signo.'),
+                'formula': 'c = (a + b) / 2',
+                'requirement': 'f(a) × f(b) < 0 (signos opuestos)'
+            })
+            
+            # Procesar cada iteración
+            history = result['history']
+            for idx, iter_data in enumerate(history):
+                iteration_num = iter_data['iteration']
+                c_val = iter_data['c']
+                
+                # Generar pasos de Lagrange para el punto medio de esta iteración
+                # Omitir la explicación del método en iteraciones posteriores a la primera
+                self.update_status(f"Generando interpolación de Lagrange para iteración {iteration_num}...")
+                skip_explanation = (idx > 0)  # Solo mostrar explicación en la primera iteración
+                lagrange_steps_iter = self.lagrange_solver.generate_step_by_step(c_val, skip_method_explanation=skip_explanation)
+                
+                # Modificar el título del primer paso de Lagrange para indicar la iteración
+                if lagrange_steps_iter:
+                    lagrange_steps_iter[0]['title'] = f"Iteración {iteration_num}: Calcular d({c_val:.2f}) con Lagrange"
+                
+                # Agregar los pasos de Lagrange
+                all_steps.extend(lagrange_steps_iter)
+                
+                # Agregar paso de iteración de bisección
+                iter_step = {
+                    'type': 'iteration',
+                    'title': f'Iteración {iteration_num}: Resultado de Bisección',
+                    'iteration': iteration_num,
+                    'a': iter_data['a'],
+                    'b': iter_data['b'],
+                    'c': iter_data['c'],
+                    'fa': iter_data['fa'],
+                    'fb': iter_data['fb'],
+                    'fc': iter_data['fc'],
+                    'error': iter_data['error'],
+                    'func_name': f"f(v) = d(v) - {dist_limit:.1f}",
+                    'is_last': idx == len(history) - 1,
+                    'dist_limit': dist_limit
+                }
+                all_steps.append(iter_step)
+            
+            # Agregar resultado final
+            all_steps.append({
+                'type': 'result',
+                'title': 'Resultado Final',
+                'root': result['root'],
+                'iterations': result['iterations'],
+                'final_error': result['final_error'],
+                'function_value': result['function_value'],
+                'converged': result['converged'],
+                'func_name': f"f(v) = d(v) - {dist_limit:.1f}",
+                'context': {
+                    'dist_limit': dist_limit
+                }
+            })
 
             # Actualizar visualización con todos los pasos
             self.visualization_panel.update_visualization(all_steps)
@@ -534,25 +578,22 @@ class FrenadoApp(ctk.CTk):
             # Cambiar a pestaña de visualización
             self.main_notebook.set("Visualizacion Paso a Paso")
 
-            # Obtener resultado
-            result_steps = [s for s in biseccion_steps if s['type'] == 'result']
-            if result_steps:
-                result_step = result_steps[0]
-                v_max = result_step['root']
+            # Mostrar resultado
+            v_max = result['root']
+            
+            self.update_status(
+                f"Velocidad maxima segura: {v_max:.1f} km/h para frenar en {dist_limit:.1f} m"
+            )
 
-                self.update_status(
-                    f"Velocidad maxima segura: {v_max:.1f} km/h para frenar en {dist_limit:.1f} m"
-                )
-
-                messagebox.showinfo(
-                    "Resultado",
-                    f"Velocidad Maxima Segura\n\n"
-                    f"Para poder frenar dentro de {dist_limit:.1f} metros,\n"
-                    f"la velocidad maxima es:\n\n"
-                    f"      {v_max:.1f} km/h\n\n"
-                    f"Iteraciones: {result_step['iterations']}\n"
-                    f"Error: {result_step['final_error']:.6f} km/h"
-                )
+            messagebox.showinfo(
+                "Resultado",
+                f"Velocidad Maxima Segura\n\n"
+                f"Para poder frenar dentro de {dist_limit:.1f} metros,\n"
+                f"la velocidad maxima es:\n\n"
+                f"      {v_max:.1f} km/h\n\n"
+                f"Iteraciones: {result['iterations']}\n"
+                f"Error: {result['final_error']:.6f} km/h"
+            )
 
         except Exception as e:
             error_msg = f"Error al resolver: {str(e)}"

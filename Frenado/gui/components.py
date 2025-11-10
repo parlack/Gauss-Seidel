@@ -818,6 +818,9 @@ class VisualizationPanel(ctk.CTkFrame):
         iter_frame = ctk.CTkFrame(self.current_step_frame)
         iter_frame.pack(fill="x", padx=30, pady=15)
         
+        # Verificar si tenemos información de distancia límite para mostrar d(v)
+        dist_limit = step.get('dist_limit', None)
+        
         data = [
             ("a", f"{step['a']:.4f}", f"f(a) = {step['fa']:.6f}"),
             ("c (punto medio)", f"{step['c']:.4f}", f"f(c) = {step['fc']:.6f}"),
@@ -848,6 +851,19 @@ class VisualizationPanel(ctk.CTkFrame):
                 font=ctk.CTkFont(size=11),
                 text_color="gray60"
             ).pack(side="left", padx=10)
+            
+            # Si es el punto medio y tenemos dist_limit, mostrar d(v)
+            if "medio" in label and dist_limit is not None:
+                v_val = step['c']
+                f_val = step['fc']
+                d_val = f_val + dist_limit  # d(v) = f(v) + dist_limit
+                
+                ctk.CTkLabel(
+                    row,
+                    text=f"→ d({v_val:.2f}) = {d_val:.2f}m (Lagrange)",
+                    font=ctk.CTkFont(size=11, weight="bold"),
+                    text_color=("green", "lightgreen")
+                ).pack(side="left", padx=10)
         
         # Error
         error_frame = ctk.CTkFrame(self.current_step_frame)

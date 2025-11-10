@@ -185,7 +185,7 @@ class BiseccionSolver:
         for idx in range(len(history)):
             iter_data = history[idx]
             
-            steps.append({
+            iter_step = {
                 'type': 'iteration',
                 'title': f'Iteración {iter_data["iteration"]}',
                 'iteration': iter_data['iteration'],
@@ -198,7 +198,13 @@ class BiseccionSolver:
                 'error': iter_data['error'],
                 'func_name': func_name,
                 'is_last': idx == len(history) - 1
-            })
+            }
+            
+            # Agregar dist_limit si está disponible en el contexto
+            if context and 'dist_limit' in context:
+                iter_step['dist_limit'] = context['dist_limit']
+            
+            steps.append(iter_step)
         
         # Paso 5: Resultado final
         steps.append({

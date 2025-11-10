@@ -103,12 +103,13 @@ class LagrangeSolver:
         
         return result
 
-    def generate_step_by_step(self, x_eval: float) -> List[Dict]:
+    def generate_step_by_step(self, x_eval: float, skip_method_explanation: bool = False) -> List[Dict]:
         """
         Genera explicación paso a paso del proceso de interpolación
         
         Args:
             x_eval: Velocidad donde evaluar (km/h)
+            skip_method_explanation: Si es True, omite la explicación del método
             
         Returns:
             Lista de pasos del proceso
@@ -123,27 +124,28 @@ class LagrangeSolver:
         steps = []
         n = len(self.points)
         
-        # Paso 1: Mostrar datos experimentales
-        steps.append({
-            'type': 'points',
-            'title': 'Datos Experimentales',
-            'content': f'Se tienen {n} mediciones de velocidad vs distancia de frenado',
-            'points': self.points.copy(),
-            'n': n,
-            'x_label': 'Velocidad (km/h)',
-            'y_label': 'Distancia de frenado (m)'
-        })
-        
-        # Paso 2: Explicar el método
-        steps.append({
-            'type': 'method',
-            'title': 'Método de Interpolación de Lagrange',
-            'content': ('El método de Lagrange construye un polinomio que pasa exactamente por todos '
-                       'los puntos experimentales. Esto permite predecir la distancia de frenado '
-                       'para cualquier velocidad dentro del rango de medición.'),
-            'formula': 'P(v) = Σ d_j × L_j(v)',
-            'where': 'v = velocidad, d_j = distancia en punto j, L_j = polinomio base j'
-        })
+        # Paso 1: Mostrar datos experimentales (solo si no se omite la explicación)
+        if not skip_method_explanation:
+            steps.append({
+                'type': 'points',
+                'title': 'Datos Experimentales',
+                'content': f'Se tienen {n} mediciones de velocidad vs distancia de frenado',
+                'points': self.points.copy(),
+                'n': n,
+                'x_label': 'Velocidad (km/h)',
+                'y_label': 'Distancia de frenado (m)'
+            })
+            
+            # Paso 2: Explicar el método
+            steps.append({
+                'type': 'method',
+                'title': 'Método de Interpolación de Lagrange',
+                'content': ('El método de Lagrange construye un polinomio que pasa exactamente por todos '
+                           'los puntos experimentales. Esto permite predecir la distancia de frenado '
+                           'para cualquier velocidad dentro del rango de medición.'),
+                'formula': 'P(v) = Σ d_j × L_j(v)',
+                'where': 'v = velocidad, d_j = distancia en punto j, L_j = polinomio base j'
+            })
         
         # Calcular todos los polinomios base y sus contribuciones
         basis_values = []
