@@ -48,7 +48,7 @@ class PointsTableInput(ctk.CTkFrame):
         # Título del panel
         title = ctk.CTkLabel(
             self,
-            text="Tabla de Mediciones",
+            text="Tabla de Puntos (x, y)",
             font=ctk.CTkFont(size=16, weight="bold")
         )
         title.pack(pady=(15, 10))
@@ -56,7 +56,7 @@ class PointsTableInput(ctk.CTkFrame):
         # Subtítulo explicativo
         subtitle = ctk.CTkLabel(
             self,
-            text="Día (x) y Altura en cm (y)",
+            text="Ingresa los puntos de interpolación",
             font=ctk.CTkFont(size=12),
             text_color="gray60"
         )
@@ -68,7 +68,7 @@ class PointsTableInput(ctk.CTkFrame):
         
         ctk.CTkLabel(
             size_control_frame,
-            text="Número de mediciones:",
+            text="Número de puntos:",
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(side="left", padx=(10, 5), pady=10)
         
@@ -113,13 +113,13 @@ class PointsTableInput(ctk.CTkFrame):
         
         help_title = ctk.CTkLabel(
             help_frame,
-            text="Requisitos:",
+            text="💡 Requisitos:",
             font=ctk.CTkFont(size=12, weight="bold")
         )
         help_title.pack(pady=(10, 5))
         
-        help_text = """• Los días deben ser únicos (no medir dos veces el mismo día)
-• Se necesitan al menos 2 mediciones para predecir
+        help_text = """• Los valores de x deben ser únicos (no duplicados)
+• Se necesitan al menos 2 puntos para interpolar
 • Todos los valores deben ser números válidos"""
         
         help_label = ctk.CTkLabel(
@@ -145,21 +145,21 @@ class PointsTableInput(ctk.CTkFrame):
         
         ctk.CTkLabel(
             header_frame,
-            text="#",
+            text="i",
             font=ctk.CTkFont(size=12, weight="bold"),
             width=40
         ).pack(side="left", padx=5)
         
         ctk.CTkLabel(
             header_frame,
-            text="Día",
+            text="x",
             font=ctk.CTkFont(size=12, weight="bold"),
             width=150
         ).pack(side="left", padx=5)
         
         ctk.CTkLabel(
             header_frame,
-            text="Altura (cm)",
+            text="y",
             font=ctk.CTkFont(size=12, weight="bold"),
             width=150
         ).pack(side="left", padx=5)
@@ -180,7 +180,7 @@ class PointsTableInput(ctk.CTkFrame):
             # Entry para x
             entry_x = ModernEntry(
                 row_frame,
-                placeholder=f"día {i}",
+                placeholder=f"x{i}",
                 width=150
             )
             entry_x.pack(side="left", padx=5)
@@ -188,7 +188,7 @@ class PointsTableInput(ctk.CTkFrame):
             # Entry para y
             entry_y = ModernEntry(
                 row_frame,
-                placeholder=f"altura {i}",
+                placeholder=f"y{i}",
                 width=150
             )
             entry_y.pack(side="left", padx=5)
@@ -282,7 +282,7 @@ class EvaluationPanel(ctk.CTkFrame):
         # Título
         title = ctk.CTkLabel(
             self,
-            text="Hacer Predicción",
+            text="Evaluar Polinomio",
             font=ctk.CTkFont(size=16, weight="bold")
         )
         title.pack(pady=(15, 10))
@@ -293,13 +293,13 @@ class EvaluationPanel(ctk.CTkFrame):
         
         ctk.CTkLabel(
             input_frame,
-            text="Día =",
+            text="x =",
             font=ctk.CTkFont(size=14, weight="bold")
         ).pack(side="left", padx=(15, 5), pady=15)
         
         self.x_entry = ModernEntry(
             input_frame,
-            placeholder="¿Qué día quieres predecir?",
+            placeholder="Punto a evaluar",
             width=200
         )
         self.x_entry.pack(side="left", fill="x", expand=True, padx=(0, 15), pady=15)
@@ -310,9 +310,9 @@ class EvaluationPanel(ctk.CTkFrame):
         # Botón de evaluar
         self.eval_button = ModernButton(
             self,
-            text="Predecir Altura",
+            text="Evaluar P(x)",
             command=self._on_evaluate_clicked,
-            fg_color="#2e7d32",
+            fg_color="#1f538d",
             height=45
         )
         self.eval_button.pack(fill="x", padx=20, pady=(0, 15))
@@ -355,9 +355,9 @@ class VisualizationPanel(ctk.CTkFrame):
         
         self.title_label = ctk.CTkLabel(
             header_frame,
-            text="Cálculo de Predicción - Método de Lagrange",
+            text="Proceso de Interpolación - Método de Lagrange",
             font=ctk.CTkFont(size=20, weight="bold"),
-            text_color=("#2e7d32", "#4caf50")
+            text_color=("#1f538d", "#4a9eff")
         )
         self.title_label.pack(side="left")
         
@@ -369,7 +369,7 @@ class VisualizationPanel(ctk.CTkFrame):
             self.progress_frame,
             width=200,
             height=20,
-            progress_color=("#2e7d32", "#4caf50")
+            progress_color=("#1f538d", "#4a9eff")
         )
         self.progress_bar.pack(padx=10, pady=10)
         
@@ -492,9 +492,9 @@ class VisualizationPanel(ctk.CTkFrame):
         """Crea tarjeta para mostrar puntos de interpolación"""
         title_label = ctk.CTkLabel(
             self.current_step_frame,
-            text=f"{step['title']}",
+            text=f"📊 {step['title']}",
             font=ctk.CTkFont(size=18, weight="bold"),
-            text_color=("#2e7d32", "#4caf50")
+            text_color=("#1f538d", "#4a9eff")
         )
         title_label.pack(pady=(20, 10))
         
@@ -513,9 +513,9 @@ class VisualizationPanel(ctk.CTkFrame):
         header = ctk.CTkFrame(points_frame)
         header.pack(fill="x", padx=10, pady=5)
         
-        ctk.CTkLabel(header, text="#", font=ctk.CTkFont(size=12, weight="bold"), width=50).pack(side="left", padx=5)
-        ctk.CTkLabel(header, text="Día", font=ctk.CTkFont(size=12, weight="bold"), width=150).pack(side="left", padx=5)
-        ctk.CTkLabel(header, text="Altura (cm)", font=ctk.CTkFont(size=12, weight="bold"), width=150).pack(side="left", padx=5)
+        ctk.CTkLabel(header, text="i", font=ctk.CTkFont(size=12, weight="bold"), width=50).pack(side="left", padx=5)
+        ctk.CTkLabel(header, text="x", font=ctk.CTkFont(size=12, weight="bold"), width=150).pack(side="left", padx=5)
+        ctk.CTkLabel(header, text="y", font=ctk.CTkFont(size=12, weight="bold"), width=150).pack(side="left", padx=5)
         
         # Puntos
         for i, (x, y) in enumerate(step['points']):
@@ -530,9 +530,9 @@ class VisualizationPanel(ctk.CTkFrame):
         """Crea tarjeta para explicar el método"""
         title_label = ctk.CTkLabel(
             self.current_step_frame,
-            text=f"{step['title']}",
+            text=f"📖 {step['title']}",
             font=ctk.CTkFont(size=18, weight="bold"),
-            text_color=("#2e7d32", "#4caf50")
+            text_color=("#1f538d", "#4a9eff")
         )
         title_label.pack(pady=(20, 10))
         
@@ -574,16 +574,16 @@ class VisualizationPanel(ctk.CTkFrame):
         """Crea tarjeta para mostrar todos los cálculos en una sola página"""
         title_label = ctk.CTkLabel(
             self.current_step_frame,
-            text=f"{step['title']}",
+            text=f"🔢 {step['title']}",
             font=ctk.CTkFont(size=18, weight="bold"),
-            text_color=("#2e7d32", "#4caf50")
+            text_color=("#1f538d", "#4a9eff")
         )
         title_label.pack(pady=(20, 10))
         
         # Información del punto a evaluar
         info_label = ctk.CTkLabel(
             self.current_step_frame,
-            text=f"Predecir altura en el día {step['x_eval']:.3g}",
+            text=f"Encontrar y({step['x_eval']:.3g})",
             font=ctk.CTkFont(size=16, weight="bold")
         )
         info_label.pack(pady=10)
@@ -845,9 +845,9 @@ class VisualizationPanel(ctk.CTkFrame):
         """Crea tarjeta para mostrar cálculo de polinomio base"""
         title_label = ctk.CTkLabel(
             self.current_step_frame,
-            text=f"{step['title']}",
+            text=f"🔢 {step['title']}",
             font=ctk.CTkFont(size=18, weight="bold"),
-            text_color=("#2e7d32", "#4caf50")
+            text_color=("#1f538d", "#4a9eff")
         )
         title_label.pack(pady=(20, 10))
         
@@ -916,9 +916,9 @@ class VisualizationPanel(ctk.CTkFrame):
         """Crea tarjeta para mostrar resultado final"""
         title_label = ctk.CTkLabel(
             self.current_step_frame,
-            text=f"{step['title']}",
+            text=f"🎯 {step['title']}",
             font=ctk.CTkFont(size=18, weight="bold"),
-            text_color=("#2e7d32", "#4caf50")
+            text_color="green"
         )
         title_label.pack(pady=(20, 10))
         
@@ -945,16 +945,16 @@ class VisualizationPanel(ctk.CTkFrame):
         
         ctk.CTkLabel(
             result_frame,
-            text=f"Día {step['x_eval']:.1f}: Altura = {step['result']:.2f} cm",
+            text=f"P({step['x_eval']:.3f}) = {step['result']:.6f}",
             font=ctk.CTkFont(size=24, weight="bold"),
-            text_color=("#2e7d32", "#4caf50")
+            text_color=("#d32f2f", "#f44336")
         ).pack(pady=20)
     
     def create_error_card(self, step):
         """Crea tarjeta para mostrar error"""
         title_label = ctk.CTkLabel(
             self.current_step_frame,
-            text=f"ERROR: {step['title']}",
+            text=f"❌ {step['title']}",
             font=ctk.CTkFont(size=18, weight="bold"),
             text_color="red"
         )
