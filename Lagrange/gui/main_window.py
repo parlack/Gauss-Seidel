@@ -23,7 +23,7 @@ class LagrangeApp(ctk.CTk):
         super().__init__()
 
         # Configuración de la ventana principal
-        self.title("Interpolación Polinómica - Método de Lagrange")
+        self.title("Predictor de Crecimiento de Plantas - Método de Lagrange")
         self.geometry("1280x720")
         self.minsize(1024, 600)
 
@@ -70,7 +70,7 @@ class LagrangeApp(ctk.CTk):
         # Título principal de la aplicación
         title_label = ctk.CTkLabel(
             header_frame,
-            text="Interpolación Polinómica de Lagrange",
+            text="Predictor de Crecimiento de Plantas",
             font=ctk.CTkFont(size=28, weight="bold"),
             text_color=("gray10", "gray90")
         )
@@ -79,7 +79,7 @@ class LagrangeApp(ctk.CTk):
         # Subtítulo explicativo
         subtitle_label = ctk.CTkLabel(
             header_frame,
-            text="Construye un polinomio que pasa por todos los puntos dados",
+            text="Predice la altura de tu planta en cualquier día usando interpolación de Lagrange",
             font=ctk.CTkFont(size=14),
             text_color=("gray50", "gray50")
         )
@@ -98,7 +98,7 @@ class LagrangeApp(ctk.CTk):
 
     def setup_input_tab(self):
         """Configura la pestaña de entrada de datos"""
-        input_tab = self.main_notebook.add("Entrada de Datos")
+        input_tab = self.main_notebook.add("Mis Mediciones")
 
         # Frame de controles superiores
         controls_frame = ctk.CTkFrame(input_tab)
@@ -168,24 +168,26 @@ class LagrangeApp(ctk.CTk):
 
         info_title = ctk.CTkLabel(
             info_frame,
-            text="ℹ️ Información",
+            text="Información",
             font=ctk.CTkFont(size=14, weight="bold")
         )
         info_title.pack(pady=(15, 10))
+        
+        info_text = """¿Cómo funciona?
 
-        info_text = """El método de Lagrange construye un polinomio interpolador único que pasa exactamente por todos los puntos dados.
+Esta aplicación usa el método de Lagrange para predecir la altura de tu planta en cualquier día, basándose en mediciones reales que hayas tomado.
 
-Características:
-• El grado del polinomio es n-1 (donde n es el número de puntos)
-• No requiere resolver sistemas de ecuaciones
-• Usa polinomios base de Lagrange
-• Garantiza pasar por todos los puntos
+Cómo usarlo:
+1. Mide tu planta varios días (ej: día 0, 7, 14, 21)
+2. Anota el día y la altura en cm
+3. Ingresa los datos en la tabla (Día, Altura)
+4. Escribe el día que quieres predecir
+5. ¡Obtén la altura estimada!
 
-Aplicaciones:
-• Aproximación de funciones
-• Análisis de datos
-• Gráficos por computadora
-• Procesamiento de señales"""
+Ejemplo práctico:
+Si mediste tu tomate los días 0, 7, 14 y 21, puedes predecir su altura el día 10 o el día 25.
+
+Nota: Funciona mejor dentro del rango de días que mediste."""
 
         info_label = ctk.CTkLabel(
             info_frame,
@@ -200,7 +202,7 @@ Aplicaciones:
         # Barra de estado para mostrar mensajes al usuario
         self.status_label = ctk.CTkLabel(
             input_tab,
-            text="Introduce los puntos (x, y) en la tabla",
+            text="Introduce tus mediciones: Día (número) y Altura en cm",
             font=ctk.CTkFont(size=12),
             text_color="gray60"
         )
@@ -208,7 +210,7 @@ Aplicaciones:
 
     def setup_solution_tab(self):
         """Configura la pestaña de solución"""
-        solution_tab = self.main_notebook.add("Proceso de Interpolación")
+        solution_tab = self.main_notebook.add("Predicción y Análisis")
 
         # Panel principal de visualización del proceso
         self.visualization_panel = VisualizationPanel(solution_tab)
@@ -238,14 +240,24 @@ Aplicaciones:
         """Carga un ejemplo predefinido"""
         examples = [
             {
-                'name': 'Ejemplo clase',
-                'points': [(1, 7), (2, 8), (9, 5)],
-                'description': ''
+                'name': 'Tomate Cherry',
+                'points': [(0, 5), (7, 12), (14, 22), (21, 35), (28, 48)],
+                'description': 'Crecimiento de planta de tomate durante 4 semanas (días vs cm)'
             },
             {
-                'name': 'Ejemplo clase 2',
-                'points': [(1, 7), (2, 8), (9, 5), (10, 4)],
-                'description': ''
+                'name': 'Girasol',
+                'points': [(0, 8), (5, 18), (10, 35), (15, 58), (20, 85), (25, 115)],
+                'description': 'Crecimiento rápido de girasol (días vs cm)'
+            },
+            {
+                'name': 'Suculenta',
+                'points': [(0, 3), (30, 4.5), (60, 6), (90, 7.2)],
+                'description': 'Crecimiento lento de suculenta (días vs cm)'
+            },
+            {
+                'name': 'Frijol',
+                'points': [(0, 0), (3, 5), (6, 15), (9, 28), (12, 42)],
+                'description': 'Germinación y crecimiento de frijol (días vs cm)'
             }
         ]
 
@@ -284,16 +296,16 @@ Aplicaciones:
             verification = self.solver.verify_interpolation()
 
             success_msg = (
-                f"Validación exitosa:\n\n"
-                f"• Número de puntos: {len(x_array)}\n"
-                f"• Grado del polinomio: {len(x_array) - 1}\n"
-                f"• Rango de x: [{min(x_array):.3f}, {max(x_array):.3f}]\n"
-                f"• Rango de y: [{min(y_array):.3f}, {max(y_array):.3f}]\n\n"
-                f"Los puntos son válidos para interpolación"
+                f"Mediciones válidas:\n\n"
+                f"Número de mediciones: {len(x_array)}\n"
+                f"Período de seguimiento: Día {min(x_array):.0f} al día {max(x_array):.0f}\n"
+                f"Altura registrada: {min(y_array):.1f} cm a {max(y_array):.1f} cm\n"
+                f"Precisión del modelo: Grado {len(x_array) - 1}\n\n"
+                f"¡Listo para hacer predicciones!"
             )
 
-            messagebox.showinfo("Validación Exitosa", success_msg)
-            self.update_status("Validación exitosa. Puntos listos para interpolar")
+            messagebox.showinfo("Mediciones Validadas", success_msg)
+            self.update_status("Mediciones validadas. Ahora puedes predecir la altura en cualquier día")
             return True
 
         except Exception as e:
@@ -353,13 +365,13 @@ Aplicaciones:
             self.visualization_panel.update_visualization(steps_data)
 
             # Cambiar a la pestaña de solución para mostrar resultados
-            self.main_notebook.set("Proceso de Interpolación")
+            self.main_notebook.set("Predicción y Análisis")
 
             # Obtener resultado final
             result_step = next((step for step in steps_data if step.get('type') == 'result'), None)
             if result_step:
                 result_value = result_step.get('result')
-                self.update_status(f"Interpolación completada: P({x_eval:.3f}) = {result_value:.6f}")
+                self.update_status(f"Predicción: En el día {x_eval:.1f}, tu planta medirá aproximadamente {result_value:.2f} cm de altura")
             else:
                 self.update_status("Proceso completado")
 
@@ -381,4 +393,8 @@ Aplicaciones:
 
         self.status_label.configure(text=message, text_color=color)
         self.update_idletasks()
+
+
+
+
 

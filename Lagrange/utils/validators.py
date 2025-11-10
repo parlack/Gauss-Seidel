@@ -152,3 +152,4 @@ class DataValidator:
         
         return f"{value:.{decimals}f}"
 
+
